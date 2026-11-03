@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Визитка QA & Python Developer</title>
+  <!-- Telegram Web App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-color: var(--tg-theme-bg-color, #0f172a);
+      --secondary-bg: var(--tg-theme-secondary-bg-color, #1e293b);
+      --text-color: var(--tg-theme-text-color, #f8fafc);
+      --hint-color: var(--tg-theme-hint-color, #94a3b8);
+      --button-color: var(--tg-theme-button-color, #38bdf8);
+      --button-text: var(--tg-theme-button-text-color, #0f172a);
+      --accent: #38bdf8;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-bg: rgba(30, 41, 59, 0.7);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      padding: 16px 16px 80px;
+      line-height: 1.45;
+      user-select: none;
+      -webkit-user-select: none;
+      background-image:
+        radial-gradient(circle at 10% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 85%, rgba(99, 102, 241, 0.08) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* Навигационные табы */
+    .nav-tabs {
+      display: flex;
+      background: var(--secondary-bg);
+      padding: 4px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+      position: sticky;
+      top: 8px;
+      z-index: 50;
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(10px);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 8px 4px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      background: transparent;
+      border: none;
+      color: var(--hint-color);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tab-btn.active {
+      background: var(--button-color);
+      color: var(--button-text);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+
+    /* Профиль Header */
+    .profile-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 86px;
+      height: 86px;
+      margin: 0 auto 12px;
+    }
+
+    .avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: #ffffff;
+      box-shadow: 0 8px 24px rgba(14, 165, 233, 0.35);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .status-badge {
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      background: #10b981;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 3px solid var(--bg-color);
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .name {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      letter-spacing: -0.3px;
+    }
+
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.12);
+      color: var(--accent);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    /* Статистика / Метрики */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .metric-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 2px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--hint-color);
+      font-weight: 500;
+    }
+
+    /* Контейнеры вкладок */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Карточки */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--hint-color);
+      font-weight: 600;
+    }
+
+    .card-text {
+      font-size: 13px;
+      color: var(--hint-color);
+      margin-bottom: 12px;
+    }
+
+    /* Теги навыков */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-color);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .tag.highlight {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: var(--accent);
+    }
+
+    /* Кнопки действий */
+    .action-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      background: var(--button-color);
+      color: var(--button-text);
+      text-decoration: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+      transition: transform 0.15s, opacity 0.2s;
+      margin-top: 6px;
+    }
+
+    .action-button:active {
+      transform: scale(0.98);
+      opacity: 0.9;
+    }
+
+    .action-button.secondary {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text-color);
+      box-shadow: none;
+      border: 1px solid var(--card-border);
+      margin-top: 8px;
+    }
+
+    /* Список контактов */
+    .contact-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .contact-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .contact-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .contact-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(56, 189, 248, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .contact-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .contact-value {
+      font-size: 12px;
+      color: var(--hint-color);
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Всплывающий тост копирования */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(16, 185, 129, 0.95);
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      z-index: 100;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Навигация по табам -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('profile', this)">👤 Профиль</button>
+    <button class="tab-btn" onclick="switchTab('projects', this)">📁 Проекты</button>
+    <button class="tab-btn" onclick="switchTab('skills', this)">🛠 Стек</button>
+    <button class="tab-btn" onclick="switchTab('contacts', this)">📞 Связь</button>
+  </nav>
+
+  <!-- ВКЛАДКА 1: Профиль -->
+  <div id="tab-profile" class="tab-content active">
+    <div class="profile-header">
+      <div class="avatar-wrapper">
+        <div class="avatar">АХ</div>
+        <div class="status-badge" title="Готов к предложениям"></div>
+      </div>
+      <h1 class="name">Алексей Хрипунов</h1>
+      <div class="role-badge">
+        <span>⚡️</span> QA Engineer & Python Dev
+      </div>
+    </div>
+
+    <!-- Метрики -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-value">QA</div>
+        <div class="metric-label">Web & API</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">Python</div>
+        <div class="metric-label">Боты & Утилиты</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">Skillbox</div>
+        <div class="metric-label">Сертификат</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">О специализации</div>
+      <p class="card-text">
+        Провожу ручное и серое тестирование веб-приложений и API. Разрабатываю телеграм-ботов, GUI-утилиты и скрипты автоматизации на Python.
+      </p>
+      <div class="tags">
+        <span class="tag highlight">Postman</span>
+        <span class="tag highlight">DevTools</span>
+        <span class="tag highlight">aiogram 3</span>
+        <span class="tag">SQL</span>
+        <span class="tag">Jira</span>
+      </div>
+    </div>
+
+    <button class="action-button" onclick="openTelegramChat()">
+      ✈️ Написать в Telegram
+    </button>
+  </div>
+
+  <!-- ВКЛАДКА 2: Проекты -->
+  <div id="tab-projects" class="tab-content">
+    <div class="card">
+      <div class="card-title">
+        TubeSaver-Pro
+        <span class="card-badge">Desktop App</span>
+      </div>
+      <p class="card-text">
+        Десктопное приложение для загрузки видео и аудио с YouTube с кастомным интерфейсом.
+      </p>
+      <div class="tags">
+        <span class="tag highlight">CustomTkinter</span>
+        <span class="tag">yt-dlp</span>
+        <span class="tag">FFmpeg</span>
+      </div>
+      <a href="https://github.com/iov1981" target="_blank" class="action-button secondary">
+        🐙 Исходный код на GitHub
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        Taxi Region Bot
+        <span class="card-badge">Commercial</span>
+      </div>
+      <p class="card-text">
+        Асинхронный бот для заказа поездок и координации водителей с базой данных и фоновым хостингом.
+      </p>
+      <div class="tags">
+        <span class="tag highlight">aiogram 3</span>
+        <span class="tag">aiosqlite</span>
+        <span class="tag">Render</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        Telegram Mini App Визитка
+        <span class="card-badge">Web / TMA</span>
+      </div>
+      <p class="card-text">
+        Интерактивная визитка с синхронизацией тем, нативным Haptic Feedback и SQLite-бэкендом.
+      </p>
+      <div class="tags">
+        <span class="tag highlight">HTML5 / JS</span>
+        <span class="tag">TMA SDK</span>
+        <span class="tag">GitHub Pages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ВКЛАДКА 3: Навыки -->
+  <div id="tab-skills" class="tab-content">
+    <div class="card">
+      <div class="card-title">🧪 Тестирование (QA)</div>
+      <p class="card-text">Методологии тест-дизайна, поиск дефектов, проверка бизнес-логики.</p>
+      <div class="tags">
+        <span class="tag highlight">Тест-кейсы & Чек-листы</span>
+        <span class="tag highlight">Postman API (GET/POST/PUT)</span>
+        <span class="tag">Chrome DevTools</span>
+        <span class="tag">Баг-репорты (Jira)</span>
+        <span class="tag">Smoke & Regression</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🐍 Разработка (Python)</div>
+      <p class="card-text">Создание сервисов, асинхронных ботов и локальных парсеров.</p>
+      <div class="tags">
+        <span class="tag highlight">Python 3</span>
+        <span class="tag highlight">aiogram 3</span>
+        <span class="tag">SQLite / aiosqlite</span>
+        <span class="tag">aiohttp</span>
+        <span class="tag">Git / GitHub</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ВКЛАДКА 4: Связь -->
+  <div id="tab-contacts" class="tab-content">
+    <div class="card">
+      <div class="contact-item">
+        <div class="contact-info">
+          <div class="contact-icon">✈️</div>
+          <div>
+            <div class="contact-name">Telegram</div>
+            <div class="contact-value">@iov1981</div>
+          </div>
+        </div>
+        <button class="copy-btn" onclick="copyData('@iov1981')">Копировать</button>
+      </div>
+
+      <div class="contact-item">
+        <div class="contact-info">
+          <div class="contact-icon">🐙</div>
+          <div>
+            <div class="contact-name">GitHub</div>
+            <div class="contact-value">github.com/iov1981</div>
+          </div>
+        </div>
+        <button class="copy-btn" onclick="copyData('https://github.com/iov1981')">Копировать</button>
+      </div>
+
+      <div class="contact-item">
+        <div class="contact-info">
+          <div class="contact-icon">📍</div>
+          <div>
+            <div class="contact-name">Локация</div>
+            <div class="contact-value">Пенза / Удаленная работа</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="action-button" onclick="openTelegramChat()">
+      💬 Открыть диалог в Telegram
+    </button>
+  </div>
+
+  <!-- Всплывающее уведомление -->
+  <div id="toast">Скопировано в буфер!</div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // Настройка нативной нижней кнопки Telegram (MainButton)
+    tg.MainButton.setText("СВЯЗАТЬСЯ В TELEGRAM");
+    tg.MainButton.show();
+    tg.MainButton.onClick(openTelegramChat);
+
+    // Переключение табов с виброоткликом
+    function switchTab(tabName, element) {
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.selectionChanged();
+      }
+
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+      element.classList.add('active');
+      document.getElementById('tab-' + tabName).classList.add('active');
+    }
+
+    // Открытие диалога
+    function openTelegramChat() {
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.impactOccurred('medium');
+      }
+      tg.openTelegramLink("https://t.me/iov1981");
+    }
+
+    // Копирование в буфер обмена
+    function copyData(text) {
+      if (tg.HapticFeedback) {
+        tg.HapticFeedback.notificationOccurred('success');
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+      });
+    }
+  </script>
+</body>
+</html>
