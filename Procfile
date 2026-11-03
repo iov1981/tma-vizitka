@@ -1,0 +1,1 @@
+web: python generate_resume.py && python main.py
