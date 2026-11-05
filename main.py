@@ -14,7 +14,10 @@ from aiogram.types import (
     InlineKeyboardButton,
     ReplyKeyboardMarkup,
     KeyboardButton,
-    WebAppInfo
+    WebAppInfo,
+    BotCommand,
+    BotCommandScopeChat,
+    BotCommandScopeDefault
 )
 
 import database as db
@@ -33,6 +36,35 @@ if not BOT_TOKEN:
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+
+
+# ================= НАСТРОЙКА ПЕРСОНАЛЬНЫХ КОМАНД МЕНЮ =================
+async def setup_bot_commands():
+    """
+    Настраивает всплывающие команды по '/':
+    - Для обычных пользователей: только /start
+    - Для администратора (ADMIN_ID): /start и /stats
+    """
+    try:
+        # Команды по умолчанию для всех пользователей
+        default_commands = [
+            BotCommand(command="start", description="Перезапустить бота / Главное меню")
+        ]
+        await bot.set_my_commands(default_commands, scope=BotCommandScopeDefault())
+
+        # Персональные команды только в чате с администратором
+        if ADMIN_ID:
+            admin_commands = [
+                BotCommand(command="start", description="Перезапустить бота"),
+                BotCommand(command="stats", description="📊 Статистика просмотров и заявок")
+            ]
+            await bot.set_my_commands(
+                admin_commands,
+                scope=BotCommandScopeChat(chat_id=int(ADMIN_ID))
+            )
+            print(f"Персональное меню команд для администратора (ID: {ADMIN_ID}) успешно установлено.")
+    except Exception as e:
+        print(f"Ошибка при установке команд меню: {e}")
 
 
 # ================= ВЕБ-СЕРВЕР KEEP-ALIVE И РАЗДАЧА INDEX.HTML =================
@@ -190,6 +222,9 @@ async def handle_web_app_data(message: Message):
 async def main():
     # Инициализация базы данных
     await db.init_db()
+
+    # Установка персональных команд меню (для админа и для гостей)
+    await setup_bot_commands()
 
     # Запуск фонового веб-сервера Keep-Alive
     await start_web_server()
