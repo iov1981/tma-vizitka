@@ -25,7 +25,6 @@ load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 PORT = int(os.getenv("PORT", 8080))
-# URL на Render (замените на свой фактический адрес сервиса)
 RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "https://tma-vizitka.onrender.com")
 
 if not BOT_TOKEN:
@@ -57,9 +56,10 @@ async def start_web_server():
 
 
 # ================= КЛАВИАТУРЫ =================
-def get_main_keyboard():
-    """Главная клавиатура бота с кнопкой Mini App"""
-    web_app_url = RENDER_EXTERNAL_URL
+def get_main_keyboard(is_admin: bool = False):
+    """Главная клавиатура бота: для админа скрывает форму связи в TMA"""
+    web_app_url = f"{RENDER_EXTERNAL_URL}?admin=true" if is_admin else RENDER_EXTERNAL_URL
+
     return ReplyKeyboardMarkup(
         keyboard=[
             [
@@ -75,7 +75,7 @@ def get_main_keyboard():
 
 
 def get_inline_links():
-    """Инлайн-кнопки со ссылками на репозиторий и связь"""
+    """Инлайн-кнопки со ссылками на репозиторий"""
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -89,11 +89,13 @@ def get_inline_links():
 @dp.message(CommandStart())
 async def cmd_start(message: Message):
     user = message.from_user
+    is_admin = bool(ADMIN_ID and str(user.id) == str(ADMIN_ID))
+
     # Сохраняем пользователя в SQLite
     await db.add_user(user.id, user.username, user.first_name)
 
-    # Оповещение администратора о новом посетителе
-    if ADMIN_ID and str(user.id) != str(ADMIN_ID):
+    # Оповещение администратора только если зашел сторонний клиент
+    if ADMIN_ID and not is_admin:
         try:
             await bot.send_message(
                 chat_id=ADMIN_ID,
@@ -108,11 +110,31 @@ async def cmd_start(message: Message):
         "Здесь вы можете посмотреть мои проекты, узнать о направлениях работы с ИИ, "
         "скачать PDF-резюме или открыть интерактивное приложение."
     )
-    await message.answer(welcome_text, reply_markup=get_main_keyboard())
+    await message.answer(welcome_text, reply_markup=get_main_keyboard(is_admin=is_admin))
+
+
+@dp.message(Command("stats"))
+async def cmd_stats(message: Message):
+    """Команда просмотра статистики (только для администратора)"""
+    user_id = message.from_user.id
+    if not ADMIN_ID or str(user_id) != str(ADMIN_ID):
+        return
+
+    stats = await db.get_stats()
+    text = (
+        "📊 <b>Статистика бота-визитки:</b>\n\n"
+        f"👥 Всего уникальных пользователей: <b>{stats['total_users']}</b>\n"
+        f"📥 Скачиваний резюме (PDF): <b>{stats['resume_downloads']}</b>\n"
+        f"✉️ Отправлено заявок через Mini App: <b>{stats['leads_count']}</b>"
+    )
+    await message.answer(text, parse_mode="HTML")
 
 
 @dp.message(F.text == "📄 Скачать резюме (PDF)")
 async def send_resume(message: Message):
+    # Логируем скачивание
+    await db.log_event(message.from_user.id, "resume_download")
+
     pdf_path = "resume.pdf"
     if os.path.exists(pdf_path):
         doc = FSInputFile(pdf_path, filename="CV_Developer.pdf")
@@ -142,6 +164,9 @@ async def handle_web_app_data(message: Message):
             user_msg = data.get("message")
             user = message.from_user
 
+            # Логируем заявку в статистику
+            await db.log_event(user.id, "lead_submit")
+
             admin_text = (
                 f"🔥 <b>Новая заявка из Mini App!</b>\n\n"
                 f"👤 <b>Имя:</b> {name}\n"
@@ -170,7 +195,6 @@ async def main():
     await start_web_server()
 
     print("Бот запущен и ожидает сообщений...")
-    # Запуск long-polling
     await dp.start_polling(bot)
 
 
