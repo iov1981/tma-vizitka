@@ -85,6 +85,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            margin-bottom: 24px;
         }
 
         .project-card {
@@ -138,7 +139,6 @@
             color: var(--hint-color);
         }
 
-        /* Технологические теги */
         .project-stack {
             display: flex;
             flex-wrap: wrap;
@@ -154,7 +154,6 @@
             border-radius: 6px;
         }
 
-        /* Ссылки */
         .project-links {
             margin-top: 4px;
         }
@@ -168,6 +167,57 @@
             align-items: center;
             gap: 4px;
         }
+
+        /* Форма обратной связи */
+        .feedback-section {
+            background-color: var(--secondary-bg);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid rgba(128, 128, 128, 0.12);
+        }
+
+        .feedback-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(128, 128, 128, 0.2);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            border-color: var(--button-color);
+        }
+
+        .form-textarea {
+            resize: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            background-color: var(--button-color);
+            color: var(--button-text);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .submit-btn:active {
+            opacity: 0.85;
+        }
     </style>
 </head>
 <body>
@@ -179,8 +229,8 @@
         <p>Разработка ботов, автоматизация и внедрение искусственного интеллекта</p>
     </header>
 
-    <!-- Секция Портфолио -->
     <main>
+        <!-- Секция Портфолио -->
         <h2 class="section-title">📂 Мои проекты & Направления</h2>
 
         <div class="projects-grid">
@@ -239,6 +289,17 @@
             </div>
 
         </div>
+
+        <!-- Секция обратной связи -->
+        <section class="feedback-section">
+            <h2 class="section-title">✉️ Оставить заявку / Связаться</h2>
+            <form id="lead-form" class="feedback-form">
+                <input type="text" id="lead-name" class="form-input" placeholder="Ваше имя" required>
+                <input type="text" id="lead-contact" class="form-input" placeholder="Telegram @username или телефон" required>
+                <textarea id="lead-message" class="form-textarea" rows="3" placeholder="Опишите задачу или проект" required></textarea>
+                <button type="submit" class="submit-btn">Отправить заявку</button>
+            </form>
+        </section>
     </main>
 
     <script>
@@ -252,12 +313,33 @@
             }
         }
 
+        // Виброотклик для карточек
         document.querySelectorAll('.project-card, .btn-link').forEach(elem => {
             elem.addEventListener('click', () => {
                 if (tg?.HapticFeedback) {
                     tg.HapticFeedback.impactOccurred('light');
                 }
             });
+        });
+
+        // Отправка формы заявки в бота
+        const leadForm = document.getElementById('lead-form');
+        leadForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const payload = {
+                type: "lead",
+                name: document.getElementById('lead-name').value.trim(),
+                contact: document.getElementById('lead-contact').value.trim(),
+                message: document.getElementById('lead-message').value.trim()
+            };
+
+            if (tg) {
+                tg.HapticFeedback?.notificationOccurred('success');
+                tg.sendData(JSON.stringify(payload));
+            } else {
+                alert('Заявка сформирована (в браузере вне Telegram): ' + JSON.stringify(payload));
+            }
         });
     </script>
 </body>
