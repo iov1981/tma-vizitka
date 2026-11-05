@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import asyncio
+import aiohttp
 from aiohttp import web
 from dotenv import load_dotenv
 
@@ -32,6 +33,12 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 PORT = int(os.getenv("PORT", 8080))
 RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "https://tma-vizitka.onrender.com")
+
+# Google Apps Script Webhook URL для записи лидов в Google Sheets
+GOOGLE_SHEETS_WEBHOOK_URL = os.getenv(
+    "GOOGLE_SHEETS_WEBHOOK_URL",
+    "https://script.google.com/macros/s/AKfycbziYuslONyFHUgrBswRgQaQardwdA9mkZWsCNayPE6ri6wvZVGXXU_leZw3hf7intSh/exec"
+)
 
 if not BOT_TOKEN:
     print("Ошибка: BOT_TOKEN не задан в переменных окружения или .env файле!")
@@ -99,6 +106,28 @@ async def start_web_server():
     site = web.TCPSite(runner, "0.0.0.0", PORT)
     await site.start()
     print(f"Веб-сервер успешно запущен на порту {PORT}")
+
+
+# ================= ОТПРАВКА ДАННЫХ В GOOGLE ТАБЛИЦУ =================
+async def send_to_google_sheets(payload: dict):
+    """Асинхронная отправка данных заявки в Google Apps Script Webhook"""
+    if not GOOGLE_SHEETS_WEBHOOK_URL:
+        return
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                GOOGLE_SHEETS_WEBHOOK_URL,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                allow_redirects=True,
+                timeout=aiohttp.ClientTimeout(total=10)
+            ) as response:
+                if response.status == 200:
+                    print("Данные успешно отправлены в Google Таблицу.")
+                else:
+                    print(f"Ошибка отправки в Google Sheets: HTTP {response.status}")
+    except Exception as e:
+        print(f"Исключение при обращении к Google Sheets: {e}")
 
 
 # ================= КЛАВИАТУРЫ =================
@@ -260,19 +289,33 @@ async def handle_web_app_data(message: Message):
             user_msg = data.get("message")
             user = message.from_user
 
+            # 1. Логируем в локальную БД
             await db.log_event(user.id, "lead_submit")
 
+            # 2. Отправляем в Google Таблицу через Apps Script Webhook
+            sheet_payload = {
+                "name": name,
+                "contact": contact,
+                "message": user_msg,
+                "username": user.username or "",
+                "user_id": user.id
+            }
+            asyncio.create_task(send_to_google_sheets(sheet_payload))
+
+            # 3. Отправляем уведомление администратору в Telegram
             admin_text = (
                 f"🔥 <b>Новая заявка из Mini App!</b>\n\n"
                 f"👤 <b>Имя:</b> {name}\n"
                 f"📞 <b>Контакт:</b> {contact}\n"
-                f"📝 <b>Задача:</b> {user_msg}\n\n"
-                f"ℹ️ <b>Отправитель в TG:</b> @{user.username or 'нет'} (ID: <code>{user.id}</code>)"
+                f"📝 <b>Задача / Расчет:</b>\n{user_msg}\n\n"
+                f"ℹ️ <b>Отправитель в TG:</b> @{user.username or 'нет'} (ID: <code>{user.id}</code>)\n"
+                f"📊 <i>Запись также сохранена в Google Таблицу.</i>"
             )
 
             if ADMIN_ID:
                 await bot.send_message(chat_id=ADMIN_ID, text=admin_text, parse_mode="HTML")
 
+            # 4. Отвечаем клиенту
             await message.answer(
                 "✅ <b>Спасибо за обращение!</b>\nВаша заявка успешно передана, я свяжусь с вами в ближайшее время.",
                 parse_mode="HTML"
