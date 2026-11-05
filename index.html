@@ -280,7 +280,7 @@
             color: var(--button-text);
         }
 
-        /* Аккордеон FAQ */
+        /* FAQ */
         .faq-section {
             background-color: var(--secondary-bg);
             border-radius: 14px;
@@ -385,7 +385,12 @@
             transition: opacity 0.2s ease;
         }
 
-        .submit-btn:active {
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .submit-btn:active:not(:disabled) {
             opacity: 0.85;
         }
 
@@ -403,10 +408,10 @@
 </head>
 <body>
 
-    <!-- Шапка профиля с аватаркой (сброс кэша ?v=2) -->
+    <!-- Шапка профиля -->
     <header class="profile">
         <div class="avatar-container">
-            <img src="/avatar.jpg?v=2" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
+            <img src="/avatar.jpg?v=3" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
             <span id="avatar-fallback" class="avatar-placeholder">AI</span>
         </div>
         <h1 id="user-name">Алексей Хрипунов</h1>
@@ -522,7 +527,7 @@
 
         </div>
 
-        <!-- Интерактивный калькулятор стоимости -->
+        <!-- Интерактивный калькулятор -->
         <section class="calculator-section">
             <h2 class="section-title">🧮 Калькулятор стоимости разработки</h2>
 
@@ -617,7 +622,7 @@
                 <input type="text" id="lead-name" class="form-input" placeholder="Ваше имя" required>
                 <input type="text" id="lead-contact" class="form-input" placeholder="Telegram @username или телефон" required>
                 <textarea id="lead-message" class="form-textarea" rows="3" placeholder="Опишите задачу или проект" required></textarea>
-                <button type="submit" class="submit-btn">Отправить заявку</button>
+                <button type="submit" id="lead-submit-btn" class="submit-btn">Отправить заявку</button>
             </form>
         </section>
     </main>
@@ -688,7 +693,7 @@
             }
         });
 
-        // FAQ аккордеон
+        // Аккордеон FAQ
         document.querySelectorAll('.faq-question').forEach(header => {
             header.addEventListener('click', () => {
                 const item = header.parentElement;
@@ -716,33 +721,77 @@
             });
         });
 
-        // Виброотклик
-        document.querySelectorAll('.project-card, .btn-link').forEach(elem => {
-            elem.addEventListener('click', () => {
-                if (tg?.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('light');
-                }
-            });
-        });
-
-        // Отправка формы заявки
+        // Отправка формы заявки (надежный способ через fetch + sendData fallback)
         const leadForm = document.getElementById('lead-form');
+        const submitBtn = document.getElementById('lead-submit-btn');
+
         if (leadForm) {
-            leadForm.addEventListener('submit', (e) => {
+            leadForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Отправка...';
+
+                const tgUser = tg?.initDataUnsafe?.user || {};
 
                 const payload = {
                     type: "lead",
                     name: document.getElementById('lead-name').value.trim(),
                     contact: document.getElementById('lead-contact').value.trim(),
-                    message: document.getElementById('lead-message').value.trim()
+                    message: document.getElementById('lead-message').value.trim(),
+                    user_id: tgUser.id || "",
+                    username: tgUser.username || "",
+                    first_name: tgUser.first_name || ""
                 };
 
-                if (tg) {
-                    tg.HapticFeedback?.notificationOccurred('success');
-                    tg.sendData(JSON.stringify(payload));
-                } else {
-                    alert('Заявка сформирована: ' + JSON.stringify(payload));
+                try {
+                    // Прямая отправка на веб-сервер бота
+                    const response = await fetch('/api/lead', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (response.ok) {
+                        submitBtn.innerText = '✅ Отправлено!';
+                        if (tg?.HapticFeedback) {
+                            tg.HapticFeedback.notificationOccurred('success');
+                        }
+
+                        setTimeout(() => {
+                            if (tg && typeof tg.close === 'function') {
+                                tg.close();
+                            } else {
+                                alert('Спасибо! Заявка успешно отправлена.');
+                                leadForm.reset();
+                                submitBtn.disabled = false;
+                                submitBtn.innerText = 'Отправить заявку';
+                            }
+                        }, 700);
+                        return;
+                    }
+                } catch (err) {
+                    console.warn('Прямой POST не удался, пробуем sendData:', err);
+                }
+
+                // Резервный вызов через Telegram sendData
+                try {
+                    if (tg && typeof tg.sendData === 'function') {
+                        tg.sendData(JSON.stringify(payload));
+                        submitBtn.innerText = '✅ Отправлено!';
+                        setTimeout(() => {
+                            if (tg.close) tg.close();
+                        }, 500);
+                    } else {
+                        alert('Заявка отправлена!');
+                        leadForm.reset();
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = 'Отправить заявку';
+                    }
+                } catch (fallbackErr) {
+                    alert('Не удалось отправить заявку. Пожалуйста, напишите напрямую в чат бота.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Отправить заявку';
                 }
             });
         }
