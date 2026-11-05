@@ -69,7 +69,7 @@
             max-width: 320px;
         }
 
-        /* Заголовки секций */
+        /* Заголовки */
         .section-title {
             font-size: 17px;
             font-weight: 600;
@@ -80,12 +80,12 @@
             color: var(--text-color);
         }
 
-        /* Сетка портфолио */
+        /* Сетка карточек */
         .projects-grid {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
 
         .project-card {
@@ -173,6 +173,99 @@
             gap: 4px;
         }
 
+        /* Блок калькулятора */
+        .calculator-section {
+            background-color: var(--secondary-bg);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid rgba(128, 128, 128, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .calc-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .calc-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--hint-color);
+        }
+
+        .calc-select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(128, 128, 128, 0.2);
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .calc-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .calc-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .calc-checkbox-item input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--button-color);
+        }
+
+        .calc-price-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(128, 128, 128, 0.25);
+            margin-top: 6px;
+        }
+
+        .calc-price-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .calc-price-val {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--button-color);
+        }
+
+        .calc-apply-btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--button-color);
+            background: transparent;
+            color: var(--button-color);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calc-apply-btn:active {
+            background: var(--button-color);
+            color: var(--button-text);
+        }
+
         /* Форма обратной связи */
         .feedback-section {
             background-color: var(--secondary-bg);
@@ -256,7 +349,6 @@
 
         <div class="projects-grid">
 
-            <!-- Карточка 1: Развиваю пользование ИИ -->
             <div class="project-card">
                 <div class="project-header">
                     <h3>Развиваю пользование ИИ</h3>
@@ -273,7 +365,6 @@
                 </div>
             </div>
 
-            <!-- Карточка 2: TMA Визитка -->
             <div class="project-card">
                 <div class="project-header">
                     <h3>Telegram Mini App «Визитка»</h3>
@@ -293,7 +384,6 @@
                 </div>
             </div>
 
-            <!-- Карточка 3: Taxi Bot -->
             <div class="project-card">
                 <div class="project-header">
                     <h3>Бот заказа такси</h3>
@@ -309,7 +399,6 @@
                 </div>
             </div>
 
-            <!-- Карточка 4: QA & Автоматизация тестирования -->
             <div class="project-card">
                 <div class="project-header">
                     <h3>QA & Автоматизация тестов</h3>
@@ -326,7 +415,6 @@
                 </div>
             </div>
 
-            <!-- Карточка 5: Автоматизация бизнес-процессов & CRM -->
             <div class="project-card">
                 <div class="project-header">
                     <h3>Интеграция CRM & Парсинг</h3>
@@ -343,7 +431,6 @@
                 </div>
             </div>
 
-            <!-- Карточка 6: Генерация документов & QR -->
             <div class="project-card">
                 <div class="project-header">
                     <h3>Генерация PDF & Отчетов</h3>
@@ -361,8 +448,51 @@
 
         </div>
 
+        <!-- Интерактивный калькулятор стоимости -->
+        <section class="calculator-section">
+            <h2 class="section-title">🧮 Калькулятор стоимости разработки</h2>
+
+            <div class="calc-group">
+                <label class="calc-label">Тип проекта:</label>
+                <select id="calc-project-type" class="calc-select">
+                    <option value="5000" data-name="Чат-бот визитка / меню">Базовый Telegram-бот (от 5 000 ₽)</option>
+                    <option value="12000" data-name="Бот с базой данных и админкой">Бот с БД SQLite и панелью управления (от 12 000 ₽)</option>
+                    <option value="20000" data-name="Telegram Mini App (TMA)">Telegram Mini App под ключ (от 20 000 ₽)</option>
+                    <option value="15000" data-name="Интеграция ИИ / LLM-агент">Интеграция ИИ / ChatGPT / Агенты (от 15 000 ₽)</option>
+                    <option value="8000" data-name="QA-тестирование и аудит">Тестирование и аудит существующего бота (от 8 000 ₽)</option>
+                </select>
+            </div>
+
+            <div class="calc-group">
+                <label class="calc-label">Дополнительные опции:</label>
+                <div class="calc-options">
+                    <label class="calc-checkbox-item">
+                        <input type="checkbox" value="3000" data-name="Подключение онлайн-оплаты">
+                        <span>Прием платежей в боте (+3 000 ₽)</span>
+                    </label>
+                    <label class="calc-checkbox-item">
+                        <input type="checkbox" value="4000" data-name="Генерация PDF/QR-документов">
+                        <span>Генерация PDF/Чеков/QR на лету (+4 000 ₽)</span>
+                    </label>
+                    <label class="calc-checkbox-item">
+                        <input type="checkbox" value="3000" data-name="Деплой 24/7 с автопингом">
+                        <span>Развертывание на сервере 24/7 (+3 000 ₽)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="calc-price-box">
+                <span class="calc-price-title">Ориентировочно:</span>
+                <span id="calc-total-price" class="calc-price-val">5 000 ₽</span>
+            </div>
+
+            <button type="button" id="calc-apply-btn" class="calc-apply-btn">
+                Заказать с этим расчетом ↵
+            </button>
+        </section>
+
         <!-- Секция обратной связи -->
-        <section id="feedback-section" class="feedback-section">
+        <section id="feedback-section" class="feedback-section" style="margin-top: 16px;">
             <h2 class="section-title">✉️ Оставить заявку / Связаться</h2>
             <form id="lead-form" class="feedback-form">
                 <input type="text" id="lead-name" class="form-input" placeholder="Ваше имя" required>
@@ -395,7 +525,52 @@
             }
         }
 
-        // Виброотклик
+        // ЛОГИКА КАЛЬКУЛЯТОРА
+        const projectSelect = document.getElementById('calc-project-type');
+        const checkboxes = document.querySelectorAll('.calc-options input[type="checkbox"]');
+        const priceLabel = document.getElementById('calc-total-price');
+        const applyBtn = document.getElementById('calc-apply-btn');
+        const messageArea = document.getElementById('lead-message');
+
+        function updatePrice() {
+            let total = parseInt(projectSelect.value, 10);
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    total += parseInt(cb.value, 10);
+                }
+            });
+            priceLabel.innerText = total.toLocaleString('ru-RU') + ' ₽';
+        }
+
+        projectSelect.addEventListener('change', updatePrice);
+        checkboxes.forEach(cb => cb.addEventListener('change', updatePrice));
+
+        // Кнопка подстановки расчета в форму
+        applyBtn.addEventListener('click', () => {
+            const selectedProject = projectSelect.options[projectSelect.selectedIndex].getAttribute('data-name');
+            let selectedOptions = [];
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selectedOptions.push(cb.getAttribute('data-name'));
+                }
+            });
+
+            let text = `Проект: ${selectedProject}\n`;
+            if (selectedOptions.length > 0) {
+                text += `Дополнительно: ${selectedOptions.join(', ')}\n`;
+            }
+            text += `Предварительный бюджет: ${priceLabel.innerText}\nДетали: `;
+
+            messageArea.value = text;
+            messageArea.scrollIntoView({ behavior: 'smooth' });
+            messageArea.focus();
+
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        });
+
+        // Виброотклик для элементов
         document.querySelectorAll('.project-card, .btn-link').forEach(elem => {
             elem.addEventListener('click', () => {
                 if (tg?.HapticFeedback) {
@@ -404,7 +579,7 @@
             });
         });
 
-        // Отправка формы заявки
+        // Отправка формы заявки в бота
         const leadForm = document.getElementById('lead-form');
         if (leadForm) {
             leadForm.addEventListener('submit', (e) => {
