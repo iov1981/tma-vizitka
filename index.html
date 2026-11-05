@@ -3,7 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Визитка разработчика</title>
+    <title>Алексей Хрипунов — Визитка разработчика & QA</title>
+
+    <!-- Метатеги OpenGraph для красивого превью ссылки в Telegram и соцсетях -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Алексей Хрипунов — Визитка разработчика & QA">
+    <meta property="og:description" content="Разработка Telegram-ботов, Mini Apps, автоматизация процессов и внедрение искусственного интеллекта.">
+    <meta property="og:url" content="https://tma-vizitka.onrender.com">
+    <meta property="og:image" content="https://tma-vizitka.onrender.com/avatar.jpg">
+    <meta property="og:image:width" content="500">
+    <meta property="og:image:height" content="500">
+
+    <!-- Twitter Card (поддерживается клиентами Telegram) -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Алексей Хрипунов — Визитка разработчика & QA">
+    <meta name="twitter:description" content="Разработка Telegram-ботов, Mini Apps, автоматизация процессов и внедрение искусственного интеллекта.">
+    <meta name="twitter:image" content="https://tma-vizitka.onrender.com/avatar.jpg">
+
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -93,7 +109,7 @@
             color: var(--text-color);
         }
 
-        /* Сетка карточек */
+        /* Сетка карточек проектов */
         .projects-grid {
             display: flex;
             flex-direction: column;
@@ -186,7 +202,7 @@
             gap: 4px;
         }
 
-        /* Блок калькулятора */
+        /* Блок калькулятора стоимости */
         .calculator-section {
             background-color: var(--secondary-bg);
             border-radius: 14px;
@@ -411,7 +427,7 @@
     <!-- Шапка профиля -->
     <header class="profile">
         <div class="avatar-container">
-            <img src="/avatar.jpg?v=3" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
+            <img src="/avatar.jpg?v=4" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
             <span id="avatar-fallback" class="avatar-placeholder">AI</span>
         </div>
         <h1 id="user-name">Алексей Хрипунов</h1>
@@ -721,7 +737,7 @@
             });
         });
 
-        // Отправка формы заявки (надежный способ через fetch + sendData fallback)
+        // Отправка формы заявки (fetch + fallback)
         const leadForm = document.getElementById('lead-form');
         const submitBtn = document.getElementById('lead-submit-btn');
 
@@ -745,7 +761,6 @@
                 };
 
                 try {
-                    // Прямая отправка на веб-сервер бота
                     const response = await fetch('/api/lead', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -774,7 +789,7 @@
                     console.warn('Прямой POST не удался, пробуем sendData:', err);
                 }
 
-                // Резервный вызов через Telegram sendData
+                // Fallback через Telegram sendData
                 try {
                     if (tg && typeof tg.sendData === 'function') {
                         tg.sendData(JSON.stringify(payload));
