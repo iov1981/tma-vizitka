@@ -34,28 +34,41 @@
             gap: 20px;
         }
 
-        /* Профиль */
+        /* Профиль и Аватар */
         .profile {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            gap: 8px;
+            gap: 10px;
             padding: 10px 0;
         }
 
-        .avatar-placeholder {
-            width: 80px;
-            height: 80px;
+        .avatar-container {
+            width: 86px;
+            height: 86px;
             border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 2px solid var(--button-color);
             background: linear-gradient(135deg, #2481cc, #39b3ff);
-            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .avatar-placeholder {
+            color: #ffffff;
             font-size: 32px;
             font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            display: none;
         }
 
         .profile h1 {
@@ -390,15 +403,17 @@
 </head>
 <body>
 
-    <!-- Шапка профиля -->
+    <!-- Шапка профиля с аватаркой (сброс кэша ?v=2) -->
     <header class="profile">
-        <div class="avatar-placeholder">AI</div>
+        <div class="avatar-container">
+            <img src="/avatar.jpg?v=2" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
+            <span id="avatar-fallback" class="avatar-placeholder">AI</span>
+        </div>
         <h1 id="user-name">Алексей Хрипунов</h1>
         <p>Разработка ботов, автоматизация, тестирование и внедрение искусственного интеллекта</p>
     </header>
 
     <main>
-        <!-- Плашка для администратора -->
         <div id="admin-banner" class="admin-badge-banner">
             👑 Вы просматриваете визитку как владелец (форма связи скрыта)
         </div>
@@ -550,7 +565,7 @@
             </button>
         </section>
 
-        <!-- Секция FAQ (Часто задаваемые вопросы) -->
+        <!-- Секция FAQ -->
         <section class="faq-section">
             <h2 class="section-title">❓ Частые вопросы (FAQ)</h2>
 
@@ -629,7 +644,7 @@
             }
         }
 
-        // ЛОГИКА КАЛЬКУЛЯТОРА
+        // Калькулятор
         const projectSelect = document.getElementById('calc-project-type');
         const checkboxes = document.querySelectorAll('.calc-options input[type="checkbox"]');
         const priceLabel = document.getElementById('calc-total-price');
@@ -673,14 +688,13 @@
             }
         });
 
-        // ЛОГИКА АККОРДЕОНА FAQ
+        // FAQ аккордеон
         document.querySelectorAll('.faq-question').forEach(header => {
             header.addEventListener('click', () => {
                 const item = header.parentElement;
                 const answer = item.querySelector('.faq-answer');
                 const isActive = item.classList.contains('active');
 
-                // Закрываем другие пункты
                 document.querySelectorAll('.faq-item').forEach(otherItem => {
                     if (otherItem !== item) {
                         otherItem.classList.remove('active');
@@ -702,7 +716,7 @@
             });
         });
 
-        // Виброотклик для карточек
+        // Виброотклик
         document.querySelectorAll('.project-card, .btn-link').forEach(elem => {
             elem.addEventListener('click', () => {
                 if (tg?.HapticFeedback) {
@@ -711,7 +725,7 @@
             });
         });
 
-        // Отправка формы заявки в бота
+        // Отправка формы заявки
         const leadForm = document.getElementById('lead-form');
         if (leadForm) {
             leadForm.addEventListener('submit', (e) => {
