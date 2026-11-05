@@ -182,6 +182,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            margin-bottom: 16px;
         }
 
         .calc-group {
@@ -264,6 +265,64 @@
         .calc-apply-btn:active {
             background: var(--button-color);
             color: var(--button-text);
+        }
+
+        /* Аккордеон FAQ */
+        .faq-section {
+            background-color: var(--secondary-bg);
+            border-radius: 14px;
+            padding: 16px;
+            border: 1px solid rgba(128, 128, 128, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+            padding-bottom: 10px;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .faq-question {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+            user-select: none;
+            gap: 8px;
+        }
+
+        .faq-icon {
+            font-size: 16px;
+            transition: transform 0.2s ease;
+            color: var(--hint-color);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.25s ease-out;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--hint-color);
+            margin-top: 0;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(45deg);
+        }
+
+        .faq-item.active .faq-answer {
+            margin-top: 8px;
         }
 
         /* Форма обратной связи */
@@ -491,8 +550,53 @@
             </button>
         </section>
 
+        <!-- Секция FAQ (Часто задаваемые вопросы) -->
+        <section class="faq-section">
+            <h2 class="section-title">❓ Частые вопросы (FAQ)</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Сколько времени занимает разработка бота?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    Базовый чат-бот или визитка создаются за 2–4 дня. Полноценное Mini App приложение или сложная интеграция с нейросетями и базой данных занимает от 1 до 2 недель.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Где будет работать бот и нужно ли оплачивать сервер?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    Бот разворачивается в надежном облаке (например, Render) с автопингом 24/7. На начальном этапе можно использовать бесплатные тарифы без регулярных затрат на инфраструктуру.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Как происходит интеграция искусственного интеллекта?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    Бот подключается к API современных языковых моделей (OpenAI, Claude, DeepSeek). Настраивается системный промпт под вашу сферу, подключение базы знаний и валидация ответов.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Предоставляется ли тестирование и поддержка?</span>
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    Да, каждый сценарий покрывается ручными и автоматизированными тестами (QA), а после сдачи проекта предоставляется техническая поддержка и консультации.
+                </div>
+            </div>
+        </section>
+
         <!-- Секция обратной связи -->
-        <section id="feedback-section" class="feedback-section" style="margin-top: 16px;">
+        <section id="feedback-section" class="feedback-section">
             <h2 class="section-title">✉️ Оставить заявку / Связаться</h2>
             <form id="lead-form" class="feedback-form">
                 <input type="text" id="lead-name" class="form-input" placeholder="Ваше имя" required>
@@ -545,7 +649,6 @@
         projectSelect.addEventListener('change', updatePrice);
         checkboxes.forEach(cb => cb.addEventListener('change', updatePrice));
 
-        // Кнопка подстановки расчета в форму
         applyBtn.addEventListener('click', () => {
             const selectedProject = projectSelect.options[projectSelect.selectedIndex].getAttribute('data-name');
             let selectedOptions = [];
@@ -570,7 +673,36 @@
             }
         });
 
-        // Виброотклик для элементов
+        // ЛОГИКА АККОРДЕОНА FAQ
+        document.querySelectorAll('.faq-question').forEach(header => {
+            header.addEventListener('click', () => {
+                const item = header.parentElement;
+                const answer = item.querySelector('.faq-answer');
+                const isActive = item.classList.contains('active');
+
+                // Закрываем другие пункты
+                document.querySelectorAll('.faq-item').forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('active');
+                        otherItem.querySelector('.faq-answer').style.maxHeight = null;
+                    }
+                });
+
+                if (isActive) {
+                    item.classList.remove('active');
+                    answer.style.maxHeight = null;
+                } else {
+                    item.classList.add('active');
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                }
+
+                if (tg?.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('light');
+                }
+            });
+        });
+
+        // Виброотклик для карточек
         document.querySelectorAll('.project-card, .btn-link').forEach(elem => {
             elem.addEventListener('click', () => {
                 if (tg?.HapticFeedback) {
