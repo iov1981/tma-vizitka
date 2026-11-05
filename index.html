@@ -132,6 +132,11 @@
             color: #ffffff;
         }
 
+        .badge-qa {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+        }
+
         .project-desc {
             margin: 0;
             font-size: 13px;
@@ -218,6 +223,17 @@
         .submit-btn:active {
             opacity: 0.85;
         }
+
+        .admin-badge-banner {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(36, 129, 204, 0.1);
+            color: var(--button-color);
+            font-size: 13px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -225,17 +241,22 @@
     <!-- Шапка профиля -->
     <header class="profile">
         <div class="avatar-placeholder">AI</div>
-        <h1 id="user-name">Портфолио & Визитка</h1>
-        <p>Разработка ботов, автоматизация и внедрение искусственного интеллекта</p>
+        <h1 id="user-name">Алексей Хрипунов</h1>
+        <p>Разработка ботов, автоматизация, тестирование и внедрение искусственного интеллекта</p>
     </header>
 
     <main>
+        <!-- Плашка для администратора -->
+        <div id="admin-banner" class="admin-badge-banner">
+            👑 Вы просматриваете визитку как владелец (форма связи скрыта)
+        </div>
+
         <!-- Секция Портфолио -->
         <h2 class="section-title">📂 Мои проекты & Направления</h2>
 
         <div class="projects-grid">
 
-            <!-- Карточка: Развиваю пользование ИИ -->
+            <!-- Карточка 1: Развиваю пользование ИИ -->
             <div class="project-card">
                 <div class="project-header">
                     <h3>Развиваю пользование ИИ</h3>
@@ -252,14 +273,14 @@
                 </div>
             </div>
 
-            <!-- Карточка: TMA Визитка -->
+            <!-- Карточка 2: TMA Визитка -->
             <div class="project-card">
                 <div class="project-header">
                     <h3>Telegram Mini App «Визитка»</h3>
                     <span class="badge">В работе</span>
                 </div>
                 <p class="project-desc">
-                    Интерактивное веб-приложение внутри Telegram с генерацией PDF-резюме на лету, базой данных SQLite и фоновым веб-сервером 24/7.
+                    Интерактивное веб-приложение внутри Telegram с генерацией PDF-резюме на лету, базой данных SQLite, аналитикой и веб-сервером 24/7.
                 </p>
                 <div class="project-stack">
                     <span class="tag">Python</span>
@@ -272,14 +293,14 @@
                 </div>
             </div>
 
-            <!-- Карточка: Taxi Bot -->
+            <!-- Карточка 3: Taxi Bot -->
             <div class="project-card">
                 <div class="project-header">
                     <h3>Бот заказа такси</h3>
                     <span class="badge">Релиз</span>
                 </div>
                 <p class="project-desc">
-                    Многофункциональный Telegram-бот для автоматизации заявок на поездки, работы с геолокацией и маршрутизацией.
+                    Многофункциональный Telegram-бот для автоматизации заявок на поездки, работы с геолокацией, тарификацией и маршрутизацией.
                 </p>
                 <div class="project-stack">
                     <span class="tag">Python</span>
@@ -288,10 +309,60 @@
                 </div>
             </div>
 
+            <!-- Карточка 4: QA & Автоматизация тестирования -->
+            <div class="project-card">
+                <div class="project-header">
+                    <h3>QA & Автоматизация тестов</h3>
+                    <span class="badge badge-qa">Качество</span>
+                </div>
+                <p class="project-desc">
+                    Комплексное тестирование Telegram-ботов, веб-приложений и API. Покрытие критических сценариев автотестами, проверка нагрузок и стабильности.
+                </p>
+                <div class="project-stack">
+                    <span class="tag">QA Engineering</span>
+                    <span class="tag">Pytest</span>
+                    <span class="tag">API Testing</span>
+                    <span class="tag">Manual & Auto</span>
+                </div>
+            </div>
+
+            <!-- Карточка 5: Автоматизация бизнес-процессов & CRM -->
+            <div class="project-card">
+                <div class="project-header">
+                    <h3>Интеграция CRM & Парсинг</h3>
+                    <span class="badge">Сервисы</span>
+                </div>
+                <p class="project-desc">
+                    Сбор и обработка данных из внешних источников, синхронизация ботов с Google Таблицами, CRM-системами и мгновенная отправка лидов.
+                </p>
+                <div class="project-stack">
+                    <span class="tag">Webhooks</span>
+                    <span class="tag">REST API</span>
+                    <span class="tag">Data Scraping</span>
+                    <span class="tag">Google Sheets</span>
+                </div>
+            </div>
+
+            <!-- Карточка 6: Генерация документов & QR -->
+            <div class="project-card">
+                <div class="project-header">
+                    <h3>Генерация PDF & Отчетов</h3>
+                    <span class="badge">Утилиты</span>
+                </div>
+                <p class="project-desc">
+                    Автоматическое формирование счетов, коммерческих предложений, визиток и резюме в формате PDF с динамическими QR-кодами.
+                </p>
+                <div class="project-stack">
+                    <span class="tag">ReportLab</span>
+                    <span class="tag">QRCode</span>
+                    <span class="tag">Pillow</span>
+                </div>
+            </div>
+
         </div>
 
         <!-- Секция обратной связи -->
-        <section class="feedback-section">
+        <section id="feedback-section" class="feedback-section">
             <h2 class="section-title">✉️ Оставить заявку / Связаться</h2>
             <form id="lead-form" class="feedback-form">
                 <input type="text" id="lead-name" class="form-input" placeholder="Ваше имя" required>
@@ -304,16 +375,27 @@
 
     <script>
         const tg = window.Telegram?.WebApp;
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdminParam = urlParams.get('admin') === 'true';
+
         if (tg) {
             tg.ready();
             tg.expand();
 
+            if (isAdminParam) {
+                const feedbackBlock = document.getElementById('feedback-section');
+                const adminBanner = document.getElementById('admin-banner');
+                if (feedbackBlock) feedbackBlock.style.display = 'none';
+                if (adminBanner) adminBanner.style.display = 'block';
+            }
+
             if (tg.initDataUnsafe?.user?.first_name) {
-                document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name;
+                document.getElementById('user-name').innerText =
+                    (tg.initDataUnsafe.user.first_name + ' ' + (tg.initDataUnsafe.user.last_name || '')).trim();
             }
         }
 
-        // Виброотклик для карточек
+        // Виброотклик
         document.querySelectorAll('.project-card, .btn-link').forEach(elem => {
             elem.addEventListener('click', () => {
                 if (tg?.HapticFeedback) {
@@ -322,25 +404,27 @@
             });
         });
 
-        // Отправка формы заявки в бота
+        // Отправка формы заявки
         const leadForm = document.getElementById('lead-form');
-        leadForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+        if (leadForm) {
+            leadForm.addEventListener('submit', (e) => {
+                e.preventDefault();
 
-            const payload = {
-                type: "lead",
-                name: document.getElementById('lead-name').value.trim(),
-                contact: document.getElementById('lead-contact').value.trim(),
-                message: document.getElementById('lead-message').value.trim()
-            };
+                const payload = {
+                    type: "lead",
+                    name: document.getElementById('lead-name').value.trim(),
+                    contact: document.getElementById('lead-contact').value.trim(),
+                    message: document.getElementById('lead-message').value.trim()
+                };
 
-            if (tg) {
-                tg.HapticFeedback?.notificationOccurred('success');
-                tg.sendData(JSON.stringify(payload));
-            } else {
-                alert('Заявка сформирована (в браузере вне Telegram): ' + JSON.stringify(payload));
-            }
-        });
+                if (tg) {
+                    tg.HapticFeedback?.notificationOccurred('success');
+                    tg.sendData(JSON.stringify(payload));
+                } else {
+                    alert('Заявка сформирована: ' + JSON.stringify(payload));
+                }
+            });
+        }
     </script>
 </body>
 </html>
