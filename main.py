@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart, Command
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
     Message,
     FSInputFile,
@@ -19,6 +21,7 @@ from aiogram.types import (
     BotCommandScopeChat,
     BotCommandScopeDefault
 )
+from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 
 import database as db
 
@@ -38,38 +41,39 @@ bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
 
+# ================= FSM СОСТОЯНИЯ =================
+class BroadcastState(StatesGroup):
+    waiting_for_message = State()
+
+
 # ================= НАСТРОЙКА ПЕРСОНАЛЬНЫХ КОМАНД МЕНЮ =================
 async def setup_bot_commands():
-    """
-    Настраивает всплывающие команды по '/':
-    - Для обычных пользователей: только /start
-    - Для администратора (ADMIN_ID): /start и /stats
-    """
+    """Команды меню для гостей и персонально для администратора"""
     try:
-        # Команды по умолчанию для всех пользователей
+        # Для всех пользователей
         default_commands = [
-            BotCommand(command="start", description="Перезапустить бота / Главное меню")
+            BotCommand(command="start", description="Перезапустить бота / Меню")
         ]
         await bot.set_my_commands(default_commands, scope=BotCommandScopeDefault())
 
-        # Персональные команды только в чате с администратором
+        # Для администратора
         if ADMIN_ID:
             admin_commands = [
                 BotCommand(command="start", description="Перезапустить бота"),
-                BotCommand(command="stats", description="📊 Статистика просмотров и заявок")
+                BotCommand(command="stats", description="📊 Статистика просмотров и заявок"),
+                BotCommand(command="broadcast", description="📢 Отправить рассылку пользователям")
             ]
             await bot.set_my_commands(
                 admin_commands,
                 scope=BotCommandScopeChat(chat_id=int(ADMIN_ID))
             )
-            print(f"Персональное меню команд для администратора (ID: {ADMIN_ID}) успешно установлено.")
+            print(f"Персональное меню команд для администратора (ID: {ADMIN_ID}) установлено.")
     except Exception as e:
         print(f"Ошибка при установке команд меню: {e}")
 
 
 # ================= ВЕБ-СЕРВЕР KEEP-ALIVE И РАЗДАЧА INDEX.HTML =================
 async def handle_ping(request):
-    """Эндпоинт для cron-job проверки и раздачи Mini App"""
     if os.path.exists("index.html"):
         with open("index.html", "r", encoding="utf-8") as f:
             return web.Response(text=f.read(), content_type="text/html")
@@ -77,7 +81,6 @@ async def handle_ping(request):
 
 
 async def start_web_server():
-    """Запуск фонового aiohttp сервера на порту 8080"""
     app = web.Application()
     app.router.add_get("/", handle_ping)
     runner = web.AppRunner(app)
@@ -89,7 +92,6 @@ async def start_web_server():
 
 # ================= КЛАВИАТУРЫ =================
 def get_main_keyboard(is_admin: bool = False):
-    """Главная клавиатура бота: для админа скрывает форму связи в TMA"""
     web_app_url = f"{RENDER_EXTERNAL_URL}?admin=true" if is_admin else RENDER_EXTERNAL_URL
 
     return ReplyKeyboardMarkup(
@@ -107,7 +109,6 @@ def get_main_keyboard(is_admin: bool = False):
 
 
 def get_inline_links():
-    """Инлайн-кнопки со ссылками на репозиторий"""
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -119,14 +120,13 @@ def get_inline_links():
 
 # ================= ХЕНДЛЕРЫ БОТА =================
 @dp.message(CommandStart())
-async def cmd_start(message: Message):
+async def cmd_start(message: Message, state: FSMContext):
+    await state.clear()
     user = message.from_user
     is_admin = bool(ADMIN_ID and str(user.id) == str(ADMIN_ID))
 
-    # Сохраняем пользователя в SQLite
     await db.add_user(user.id, user.username, user.first_name)
 
-    # Оповещение администратора только если зашел сторонний клиент
     if ADMIN_ID and not is_admin:
         try:
             await bot.send_message(
@@ -147,7 +147,6 @@ async def cmd_start(message: Message):
 
 @dp.message(Command("stats"))
 async def cmd_stats(message: Message):
-    """Команда просмотра статистики (только для администратора)"""
     user_id = message.from_user.id
     if not ADMIN_ID or str(user_id) != str(ADMIN_ID):
         return
@@ -162,9 +161,71 @@ async def cmd_stats(message: Message):
     await message.answer(text, parse_mode="HTML")
 
 
+# --- РАССЫЛКА ПОЛЬЗОВАТЕЛЯМ (/broadcast) ---
+@dp.message(Command("broadcast"))
+async def cmd_broadcast(message: Message, state: FSMContext):
+    """Инициация рассылки (только для администратора)"""
+    user_id = message.from_user.id
+    if not ADMIN_ID or str(user_id) != str(ADMIN_ID):
+        return
+
+    await state.set_state(BroadcastState.waiting_for_message)
+    await message.answer(
+        "📢 <b>Режим рассылки сообщений</b>\n\n"
+        "Отправьте сообщение (текст, фото или документ), которое хотите разослать всем пользователям бота.\n\n"
+        "Для отмены отправьте /cancel",
+        parse_mode="HTML"
+    )
+
+
+@dp.message(Command("cancel"))
+async def cmd_cancel(message: Message, state: FSMContext):
+    """Отмена текущего действия FSM"""
+    await state.clear()
+    await message.answer("Действие отменено.")
+
+
+@dp.message(BroadcastState.waiting_for_message)
+async def process_broadcast_message(message: Message, state: FSMContext):
+    """Выполнение рассылки всем пользователям из базы SQLite"""
+    await state.clear()
+
+    user_ids = await db.get_all_user_ids()
+    if not user_ids:
+        await message.answer("База пользователей пуста. Некому отправлять.")
+        return
+
+    status_msg = await message.answer(f"⏳ Запуск рассылки на {len(user_ids)} получателей...")
+
+    success = 0
+    blocked = 0
+
+    for uid in user_ids:
+        try:
+            # Копируем сообщение в исходном виде
+            await message.copy_to(chat_id=uid)
+            success += 1
+            # Небольшая пауза, чтобы не превысить лимиты Telegram API
+            await asyncio.sleep(0.05)
+        except TelegramForbiddenError:
+            # Пользователь заблокировал бота
+            blocked += 1
+        except TelegramBadRequest:
+            blocked += 1
+        except Exception:
+            blocked += 1
+
+    report_text = (
+        "✅ <b>Рассылка завершена!</b>\n\n"
+        f"📤 Всего в базе: <b>{len(user_ids)}</b>\n"
+        f"📬 Успешно доставлено: <b>{success}</b>\n"
+        f"🚫 Не доставлено (заблокировали бота): <b>{blocked}</b>"
+    )
+    await status_msg.edit_text(report_text, parse_mode="HTML")
+
+
 @dp.message(F.text == "📄 Скачать резюме (PDF)")
 async def send_resume(message: Message):
-    # Логируем скачивание
     await db.log_event(message.from_user.id, "resume_download")
 
     pdf_path = "resume.pdf"
@@ -187,7 +248,6 @@ async def about_me(message: Message):
 
 @dp.message(F.web_app_data)
 async def handle_web_app_data(message: Message):
-    """Обработка данных формы обратной связи из Mini App"""
     try:
         data = json.loads(message.web_app_data.data)
         if data.get("type") == "lead":
@@ -196,7 +256,6 @@ async def handle_web_app_data(message: Message):
             user_msg = data.get("message")
             user = message.from_user
 
-            # Логируем заявку в статистику
             await db.log_event(user.id, "lead_submit")
 
             admin_text = (
@@ -220,13 +279,8 @@ async def handle_web_app_data(message: Message):
 
 # ================= ТОЧКА ВХОДА =================
 async def main():
-    # Инициализация базы данных
     await db.init_db()
-
-    # Установка персональных команд меню (для админа и для гостей)
     await setup_bot_commands()
-
-    # Запуск фонового веб-сервера Keep-Alive
     await start_web_server()
 
     print("Бот запущен и ожидает сообщений...")

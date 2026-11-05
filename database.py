@@ -6,7 +6,6 @@ DB_NAME = "database.db"
 async def init_db():
     """Создание таблиц пользователей и статистики"""
     async with aiosqlite.connect(DB_NAME) as db:
-        # Таблица пользователей
         await db.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY,
@@ -15,7 +14,6 @@ async def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        # Таблица для логирования событий (клики, скачивания, заявки)
         await db.execute("""
             CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,15 +48,12 @@ async def log_event(user_id: int, event_type: str):
 async def get_stats() -> dict:
     """Получение сводной статистики для администратора"""
     async with aiosqlite.connect(DB_NAME) as db:
-        # Всего уникальных пользователей
         async with db.execute("SELECT COUNT(*) FROM users") as cursor:
             total_users = (await cursor.fetchone())[0]
 
-        # Скачиваний резюме
         async with db.execute("SELECT COUNT(*) FROM events WHERE event_type = 'resume_download'") as cursor:
             resume_downloads = (await cursor.fetchone())[0]
 
-        # Отправленных заявок
         async with db.execute("SELECT COUNT(*) FROM events WHERE event_type = 'lead_submit'") as cursor:
             leads_count = (await cursor.fetchone())[0]
 
@@ -67,3 +62,11 @@ async def get_stats() -> dict:
             "resume_downloads": resume_downloads,
             "leads_count": leads_count
         }
+
+
+async def get_all_user_ids() -> list:
+    """Получение списка всех ID пользователей для рассылки"""
+    async with aiosqlite.connect(DB_NAME) as db:
+        async with db.execute("SELECT user_id FROM users") as cursor:
+            rows = await cursor.fetchall()
+            return [row[0] for row in rows]
