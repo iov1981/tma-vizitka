@@ -48,15 +48,12 @@ class BroadcastState(StatesGroup):
 
 # ================= НАСТРОЙКА ПЕРСОНАЛЬНЫХ КОМАНД МЕНЮ =================
 async def setup_bot_commands():
-    """Команды меню для гостей и персонально для администратора"""
     try:
-        # Для всех пользователей
         default_commands = [
             BotCommand(command="start", description="Перезапустить бота / Меню")
         ]
         await bot.set_my_commands(default_commands, scope=BotCommandScopeDefault())
 
-        # Для администратора
         if ADMIN_ID:
             admin_commands = [
                 BotCommand(command="start", description="Перезапустить бота"),
@@ -72,17 +69,31 @@ async def setup_bot_commands():
         print(f"Ошибка при установке команд меню: {e}")
 
 
-# ================= ВЕБ-СЕРВЕР KEEP-ALIVE И РАЗДАЧА INDEX.HTML =================
+# ================= ВЕБ-СЕРВЕР: РАЗДАЧА HTML И АВАТАРКИ =================
 async def handle_ping(request):
+    """Раздача index.html и ответ на пинг"""
     if os.path.exists("index.html"):
         with open("index.html", "r", encoding="utf-8") as f:
             return web.Response(text=f.read(), content_type="text/html")
     return web.Response(text="Bot is running!", content_type="text/plain")
 
 
+async def handle_avatar(request):
+    """Раздача фотографии профиля avatar.jpg"""
+    avatar_path = "avatar.jpg"
+    if os.path.exists(avatar_path):
+        return web.FileResponse(avatar_path)
+    elif os.path.exists("avatar.png"):
+        return web.FileResponse("avatar.png")
+    return web.Response(status=404, text="Avatar not found")
+
+
 async def start_web_server():
     app = web.Application()
     app.router.add_get("/", handle_ping)
+    app.router.add_get("/avatar.jpg", handle_avatar)
+    app.router.add_get("/avatar.png", handle_avatar)
+
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", PORT)
@@ -161,10 +172,8 @@ async def cmd_stats(message: Message):
     await message.answer(text, parse_mode="HTML")
 
 
-# --- РАССЫЛКА ПОЛЬЗОВАТЕЛЯМ (/broadcast) ---
 @dp.message(Command("broadcast"))
 async def cmd_broadcast(message: Message, state: FSMContext):
-    """Инициация рассылки (только для администратора)"""
     user_id = message.from_user.id
     if not ADMIN_ID or str(user_id) != str(ADMIN_ID):
         return
@@ -180,14 +189,12 @@ async def cmd_broadcast(message: Message, state: FSMContext):
 
 @dp.message(Command("cancel"))
 async def cmd_cancel(message: Message, state: FSMContext):
-    """Отмена текущего действия FSM"""
     await state.clear()
     await message.answer("Действие отменено.")
 
 
 @dp.message(BroadcastState.waiting_for_message)
 async def process_broadcast_message(message: Message, state: FSMContext):
-    """Выполнение рассылки всем пользователям из базы SQLite"""
     await state.clear()
 
     user_ids = await db.get_all_user_ids()
@@ -202,13 +209,10 @@ async def process_broadcast_message(message: Message, state: FSMContext):
 
     for uid in user_ids:
         try:
-            # Копируем сообщение в исходном виде
             await message.copy_to(chat_id=uid)
             success += 1
-            # Небольшая пауза, чтобы не превысить лимиты Telegram API
             await asyncio.sleep(0.05)
         except TelegramForbiddenError:
-            # Пользователь заблокировал бота
             blocked += 1
         except TelegramBadRequest:
             blocked += 1
