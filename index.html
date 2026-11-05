@@ -14,7 +14,7 @@
     <meta property="og:image:width" content="500">
     <meta property="og:image:height" content="500">
 
-    <!-- Twitter Card (поддерживается клиентами Telegram) -->
+    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="Алексей Хрипунов — Визитка разработчика & QA">
     <meta name="twitter:description" content="Разработка Telegram-ботов, Mini Apps, автоматизация процессов и внедрение искусственного интеллекта.">
@@ -57,7 +57,7 @@
             align-items: center;
             text-align: center;
             gap: 10px;
-            padding: 10px 0;
+            padding: 10px 0 0 0;
         }
 
         .avatar-container {
@@ -97,6 +97,40 @@
             color: var(--hint-color);
             max-width: 320px;
         }
+
+        /* Быстрые контакты */
+        .quick-contacts {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .contact-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background-color: var(--secondary-bg);
+            border: 1px solid rgba(128, 128, 128, 0.15);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .contact-chip:active {
+            transform: scale(0.96);
+            background-color: rgba(128, 128, 128, 0.15);
+        }
+
+        .chip-tg { color: #2481cc; }
+        .chip-insta { color: #e1306c; }
+        .chip-mail { color: #ea4335; }
+        .chip-github { color: var(--text-color); }
 
         /* Заголовки */
         .section-title {
@@ -202,7 +236,7 @@
             gap: 4px;
         }
 
-        /* Блок калькулятора стоимости */
+        /* Калькулятор стоимости */
         .calculator-section {
             background-color: var(--secondary-bg);
             border-radius: 14px;
@@ -427,11 +461,27 @@
     <!-- Шапка профиля -->
     <header class="profile">
         <div class="avatar-container">
-            <img src="/avatar.jpg?v=4" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
+            <img src="/avatar.jpg?v=5" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
             <span id="avatar-fallback" class="avatar-placeholder">AI</span>
         </div>
         <h1 id="user-name">Алексей Хрипунов</h1>
         <p>Разработка ботов, автоматизация, тестирование и внедрение искусственного интеллекта</p>
+
+        <!-- Быстрые контакты с актуальными данными -->
+        <div class="quick-contacts">
+            <a href="https://t.me/iov1981" target="_blank" class="contact-chip chip-tg">
+                ✈️ Telegram
+            </a>
+            <a href="https://instagram.com/iov1981" target="_blank" class="contact-chip chip-insta">
+                📸 Instagram
+            </a>
+            <a href="mailto:hripunov60@gmail.com" class="contact-chip chip-mail">
+                ✉️ Email
+            </a>
+            <a href="https://github.com/iov1981" target="_blank" class="contact-chip chip-github">
+                🐙 GitHub
+            </a>
+        </div>
     </header>
 
     <main>
@@ -443,7 +493,6 @@
         <h2 class="section-title">📂 Мои проекты & Направления</h2>
 
         <div class="projects-grid">
-
             <div class="project-card">
                 <div class="project-header">
                     <h3>Развиваю пользование ИИ</h3>
@@ -540,7 +589,6 @@
                     <span class="tag">Pillow</span>
                 </div>
             </div>
-
         </div>
 
         <!-- Интерактивный калькулятор -->
@@ -789,7 +837,6 @@
                     console.warn('Прямой POST не удался, пробуем sendData:', err);
                 }
 
-                // Fallback через Telegram sendData
                 try {
                     if (tg && typeof tg.sendData === 'function') {
                         tg.sendData(JSON.stringify(payload));

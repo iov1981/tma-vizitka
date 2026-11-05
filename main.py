@@ -25,12 +25,13 @@ from aiogram.types import (
 from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 
 import database as db
+from generate_resume import create_resume
 
 # Загрузка переменных окружения
 load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_ID = os.getenv("ADMIN_ID")
+ADMIN_ID = os.getenv("ADMIN_ID", "770948445")
 PORT = int(os.getenv("PORT", 8080))
 RENDER_EXTERNAL_URL = os.getenv("RENDER_EXTERNAL_URL", "https://tma-vizitka.onrender.com")
 
@@ -212,7 +213,12 @@ def get_inline_links():
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="🐙 GitHub репозиторий", url="https://github.com/iov1981/tma-vizitka")
+                InlineKeyboardButton(text="✈️ Telegram", url="https://t.me/iov1981"),
+                InlineKeyboardButton(text="🐙 GitHub", url="https://github.com/iov1981")
+            ],
+            [
+                InlineKeyboardButton(text="📸 Instagram", url="https://instagram.com/iov1981"),
+                InlineKeyboardButton(text="✉️ Email", url="mailto:hripunov60@gmail.com")
             ]
         ]
     )
@@ -322,19 +328,28 @@ async def send_resume(message: Message):
     await db.log_event(message.from_user.id, "resume_download")
 
     pdf_path = "resume.pdf"
+    try:
+        # Автоматическая генерация свежего резюме
+        create_resume(pdf_path)
+    except Exception as e:
+        print(f"Ошибка при создании PDF: {e}")
+
     if os.path.exists(pdf_path):
-        doc = FSInputFile(pdf_path, filename="CV_Developer.pdf")
-        await message.answer_document(document=doc, caption="Ваше резюме готово к просмотру!")
+        doc = FSInputFile(pdf_path, filename="CV_Alexey_Khripunov.pdf")
+        await message.answer_document(
+            document=doc,
+            caption="📄 Ваше резюме готово!\nВнутри вы найдете ключевой стек, проекты и QR-код со ссылкой на бота для визиток."
+        )
     else:
-        await message.answer("⚠️ Файл резюме сейчас генерируется. Пожалуйста, попробуйте чуть позже.")
+        await message.answer("⚠️ Файл резюме сейчас формируется. Пожалуйста, попробуйте чуть позже.")
 
 
 @dp.message(F.text == "ℹ️ Обо мне")
 async def about_me(message: Message):
     text = (
-        "💼 <b>Специализация:</b> Разработка Telegram-ботов, Mini Apps, интеграция ИИ и автоматизация процессов.\n\n"
-        "🛠 <b>Стек:</b> Python, aiogram 3, aiosqlite, ReportLab, HTML/CSS/JS, LLM APIs.\n\n"
-        "Нажмите <b>«📱 Открыть визитку»</b>, чтобы посмотреть интерактивное портфолио."
+        "💼 <b>Специализация:</b> Инженер по тестированию (QA) & Python-разработчик.\n\n"
+        "🛠 <b>Стек:</b> Python, aiogram 3, aiosqlite, Pytest, ReportLab, HTML/CSS/JS, LLM APIs.\n\n"
+        "Связаться со мной можно напрямую в соцсетях или по почте:"
     )
     await message.answer(text, reply_markup=get_inline_links(), parse_mode="HTML")
 
