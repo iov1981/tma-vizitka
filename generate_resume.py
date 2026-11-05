@@ -9,10 +9,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 
 def generate_vcard_qr(filename="vcard_qr.png"):
-    """
-    Генерирует QR-код с контактом формата vCard.
-    При наведении камеры смартфон предлагает сразу сохранить контакт в телефонную книгу.
-    """
+    """Генерация QR-кода с карточкой контакта vCard"""
     vcard_data = (
         "BEGIN:VCARD\n"
         "VERSION:3.0\n"
@@ -20,7 +17,7 @@ def generate_vcard_qr(filename="vcard_qr.png"):
         "FN:Алексей Хрипунов\n"
         "TITLE:AI & Telegram Bot Developer\n"
         "URL:https://t.me/aleksey_qa_vizitka_bot\n"
-        "NOTE:Разработка ботов, автоматизация и внедрение искусственного интеллекта\n"
+        "NOTE:Разработка ботов, автоматизация и внедрение ИИ\n"
         "END:VCARD"
     )
     qr = qrcode.QRCode(
@@ -36,24 +33,27 @@ def generate_vcard_qr(filename="vcard_qr.png"):
     return filename
 
 
-def create_resume(output_filename="resume.pdf"):
-    # Регистрация кириллического шрифта (используем стандартный DejaVuSans из системы или Arial)
-    # Если шрифт не найден, библиотека может использовать базовый Helvetica
+def setup_cyrillic_font():
+    """Регистрация шрифта с гарантированной поддержкой кириллицы"""
     font_name = "Helvetica"
-    try:
-        # Проверяем типовые пути к шрифтам с кириллицей в Linux / Windows
-        possible_fonts = [
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            "C:\\Windows\\Fonts\\arial.ttf",
-            "DejaVuSans.ttf"
-        ]
-        for path in possible_fonts:
-            if os.path.exists(path):
-                pdfmetrics.registerFont(TTFont("CustomFont", path))
-                font_name = "CustomFont"
+    font_files = [
+        "DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "C:\\Windows\\Fonts\\arial.ttf"
+    ]
+    for font_path in font_files:
+        if os.path.exists(font_path):
+            try:
+                pdfmetrics.registerFont(TTFont("DejaVuCyr", font_path))
+                font_name = "DejaVuCyr"
                 break
-    except Exception as e:
-        print(f"Предупреждение по шрифтам: {e}")
+            except Exception as e:
+                print(f"Ошибка подключения шрифта {font_path}: {e}")
+    return font_name
+
+
+def create_resume(output_filename="resume.pdf"):
+    font_name = setup_cyrillic_font()
 
     doc = SimpleDocTemplate(
         output_filename,
@@ -66,7 +66,7 @@ def create_resume(output_filename="resume.pdf"):
 
     styles = getSampleStyleSheet()
 
-    # Пользовательские стили
+    # Стили с поддержкой зарегистрированного кириллического шрифта
     name_style = ParagraphStyle(
         'NameStyle',
         parent=styles['Heading1'],
@@ -89,11 +89,11 @@ def create_resume(output_filename="resume.pdf"):
         'SectionHeading',
         parent=styles['Heading2'],
         fontName=font_name,
-        fontSize=13,
-        leading=17,
+        fontSize=12,
+        leading=16,
         textColor=colors.HexColor("#0f172a"),
-        spaceBefore=10,
-        spaceAfter=6
+        spaceBefore=8,
+        spaceAfter=4
     )
 
     body_style = ParagraphStyle(
@@ -107,81 +107,74 @@ def create_resume(output_filename="resume.pdf"):
 
     story = []
 
-    # 1. Шапка: Имя, должность и vCard QR-код справа
+    # 1. Шапка резюме с QR-кодом
     qr_path = generate_vcard_qr()
 
     header_text = [
         Paragraph("<b>Алексей Хрипунов</b>", name_style),
         Spacer(1, 4),
-        Paragraph("<b>Разработчик Telegram-ботов | Интегратор ИИ | QA Automation</b>", title_style),
-        Spacer(1, 6),
-        Paragraph("Telegram: @aleksey_qa_vizitka_bot | Специализация: Python, AI, Bots", body_style),
+        Paragraph("<b>Инженер по тестированию (QA Engineer) / Python-разработчик</b>", title_style),
+        Spacer(1, 4),
+        Paragraph("Telegram: @iov1981 | GitHub: github.com/iov1981", body_style),
     ]
 
-    header_table_data = [
-        [header_text, Image(qr_path, width=70, height=70)]
-    ]
-    header_table = Table(header_table_data, colWidths=[450, 90])
+    header_table = Table([[header_text, Image(qr_path, width=70, height=70)]], colWidths=[450, 90])
     header_table.setStyle(TableStyle([
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
         ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
     ]))
     story.append(header_table)
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 8))
 
-    # Разделитель
+    # Разделительная полоса
     line_table = Table([['']], colWidths=[540], rowHeights=[2])
     line_table.setStyle(TableStyle([
         ('LINEBELOW', (0, 0), (-1, -1), 1.5, colors.HexColor("#2563eb")),
     ]))
     story.append(line_table)
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 6))
 
-    # 2. Ключевые компетенции
-    story.append(Paragraph("<b>КЛЮЧЕВЫЕ КОМПЕТЕНЦИИ</b>", heading_style))
+    # 2. О себе
+    story.append(Paragraph("<b>О СЕБЕ</b>", heading_style))
+    about_text = (
+        "QA-инженер с опытом ручного и базового автоматизированного тестирования. "
+        "Глубокое понимание процессов разработки ПО (SDLC, STLC), составления тест-планов, "
+        "чек-листов и тест-кейсов. Разработка прикладных решений на Python, создание и тестирование Telegram-ботов."
+    )
+    story.append(Paragraph(about_text, body_style))
+    story.append(Spacer(1, 6))
+
+    # 3. Навыки
+    story.append(Paragraph("<b>КЛЮЧЕВЫЕ НАВЫКИ</b>", heading_style))
     skills_text = (
-        "• <b>Telegram & Bots:</b> aiogram 3, Telegram Mini Apps (TMA), Webhook/Polling, создание ботов под ключ.<br/>"
-        "• <b>Искусственный Интеллект:</b> интеграция LLM (OpenAI API, Claude, DeepSeek), AI-агенты, Prompt Engineering, автоматизация рутины.<br/>"
-        "• <b>Backend & БД:</b> Python, aiohttp, SQLite (aiosqlite), архитектурные паттерны, асинхронное программирование.<br/>"
-        "• <b>QA & Качество:</b> ручное и автоматизированное тестирование API и логики ботов, валидация сценариев.<br/>"
-        "• <b>Деплой & Хостинг:</b> развертывание 24/7 (Render, Linux), настройка Keep-Alive демонов, Git/GitHub."
+        "• <b>Тестирование:</b> Функциональное, регрессионное, интеграционное, UI/UX, кроссбраузерное.<br/>"
+        "• <b>Тестирование API:</b> Postman, Chrome DevTools, валидация JSON-ответов.<br/>"
+        "• <b>Базы данных:</b> SQL (SELECT, JOIN, агрегация), SQLite / aiosqlite.<br/>"
+        "• <b>Стек и инструменты:</b> Python, Git, GitHub, PyCharm, Jira, Confluence, DevTools, aiogram 3."
     )
     story.append(Paragraph(skills_text, body_style))
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 6))
 
-    # 3. Реализованные проекты и опыт
-    story.append(Paragraph("<b>РЕАЛИЗОВАННЫЕ ПРОЕКТЫ И ОПЫТ</b>", heading_style))
-
+    # 4. Проекты и опыт
+    story.append(Paragraph("<b>ПРОЕКТЫ И ПРАКТИЧЕСКИЙ ОПЫТ</b>", heading_style))
     projects_text = (
-        "<b>1. Telegram Mini App «Визитка» & Портфолио</b><br/>"
-        "Разработка full-stack визитки с веб-приложением внутри Telegram, динамической генерацией PDF-резюме "
-        "с персональным vCard QR-кодом, сбором заявок клиентов и скрытой административной аналитикой.<br/>"
-        "<i>Стек: Python, aiogram 3, aiosqlite, ReportLab, HTML5/CSS3.</i><br/><br/>"
-
-        "<b>2. Бот для автоматизации сервиса заказа такси</b><br/>"
-        "Реализация комплексного Telegram-сервиса с обработкой геопозиции пользователей, тарификацией поездок "
-        "и непрерывной облачной работой 24/7.<br/>"
-        "<i>Стек: Python, aiogram, Render Cloud Hosting.</i><br/><br/>"
-
-        "<b>3. Направление: Внедрение и развитие инструментов ИИ</b><br/>"
-        "Настройка и внедрение прикладных решений на базе нейросетей, интеграция языковых моделей в бизнес-процессы "
-        "для генерации ответов, анализа данных и оптимизации времени специалистов."
+        "• <b>TubeSaver-Pro:</b> Десктопное приложение для загрузки мультимедиа (Python, CustomTkinter, yt-dlp).<br/>"
+        "• <b>Taxi Region Bot:</b> Telegram-бот для автоматизации заказов поездок (aiogram 3, aiosqlite, Render).<br/>"
+        "• <b>Web-визитка & Telegram Mini App:</b> Интерактивное веб-приложение на Python с генерацией PDF и сбором лидов."
     )
     story.append(Paragraph(projects_text, body_style))
-    story.append(Spacer(1, 8))
+    story.append(Spacer(1, 6))
 
-    # 4. Преимущества работы
-    story.append(Paragraph("<b>ПОДХОД К РАБОТЕ</b>", heading_style))
-    approach_text = (
-        "Внимание к деталям, упор на отказоустойчивость решений (24/7 работа без простоев), "
-        "чистая архитектура кода и понятный интерфейс для конечного пользователя. "
-        "Отсканируйте QR-код в правом верхнем углу документа для связи в Telegram."
+    # 5. Образование
+    story.append(Paragraph("<b>ОБРАЗОВАНИЕ И КУРСЫ</b>", heading_style))
+    edu_text = (
+        "• Курс «Инженер по тестированию» (Skillbox).<br/>"
+        "• Тестирование веб-приложений и Android-приложений (клиент-сервер, REST-архитектура, чек-листы)."
     )
-    story.append(Paragraph(approach_text, body_style))
+    story.append(Paragraph(edu_text, body_style))
 
     doc.build(story)
 
-    # Удаляем временную картинку QR после сборки PDF
     if os.path.exists(qr_path):
         os.remove(qr_path)
     print(f"Резюме успешно сгенерировано: {output_filename}")
