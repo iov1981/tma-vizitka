@@ -475,7 +475,7 @@
     <!-- Шапка профиля -->
     <header class="profile">
         <div class="avatar-container">
-            <img src="/avatar.jpg?v=8" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
+            <img src="/avatar.jpg?v=9" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
             <span id="avatar-fallback" class="avatar-placeholder">AI</span>
         </div>
         <h1 id="user-name">Алексей Хрипунов</h1>
@@ -722,8 +722,18 @@
             }
         }
 
+        // Надежное открытие Email через веб-интерфейс Gmail с fallback на mailto
         function openMail(email) {
-            window.location.href = 'mailto:' + email;
+            const webMailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`;
+            if (tg && typeof tg.openLink === 'function') {
+                tg.openLink(webMailUrl);
+            } else {
+                window.location.href = `mailto:${email}`;
+            }
+
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
         }
 
         // Поделиться Mini App через список чатов Telegram со стабильным параметром ?start=open
