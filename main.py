@@ -27,6 +27,7 @@ from aiogram.exceptions import TelegramForbiddenError, TelegramBadRequest
 
 import database as db
 from generate_resume import create_resume
+from ai_assistant import ask_gemini
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -61,11 +62,16 @@ class OfferState(StatesGroup):
     waiting_for_contact = State()
 
 
+class AIAssistantState(StatesGroup):
+    chatting = State()
+
+
 # ================= НАСТРОЙКА МЕНЮ =================
 async def setup_bot_commands():
     try:
         default_commands = [
             BotCommand(command="start", description="Перезапустить бота / Меню"),
+            BotCommand(command="ask", description="🤖 Задать вопрос AI-ассистенту"),
             BotCommand(command="cancel", description="Отменить текущее действие")
         ]
         await bot.set_my_commands(default_commands, scope=BotCommandScopeDefault())
@@ -75,6 +81,7 @@ async def setup_bot_commands():
                 BotCommand(command="start", description="Перезапустить бота"),
                 BotCommand(command="stats", description="📊 Статистика просмотров и заявок"),
                 BotCommand(command="broadcast", description="📢 Отправить рассылку пользователям"),
+                BotCommand(command="ask", description="🤖 Задать вопрос AI-ассистенту"),
                 BotCommand(command="cancel", description="Отменить текущее действие")
             ]
             await bot.set_my_commands(
@@ -207,6 +214,7 @@ def get_main_keyboard(is_admin: bool = False):
                 KeyboardButton(text="📱 Открыть визитку", web_app=WebAppInfo(url=web_app_url))
             ],
             [
+                KeyboardButton(text="🤖 Спросить AI-ассистента"),
                 KeyboardButton(text="💼 Предложить проект / оффер")
             ],
             [
@@ -218,6 +226,12 @@ def get_main_keyboard(is_admin: bool = False):
     )
 
 def get_cancel_keyboard():
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="❌ Выйти из режима AI")]],
+        resize_keyboard=True
+    )
+
+def get_offer_cancel_keyboard():
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text="❌ Отмена")]],
         resize_keyboard=True
@@ -241,18 +255,13 @@ def get_inline_links():
     )
 
 
-# ================= ХЕНДЛЕРЫ БОТА =================
+# ================= ОБРАБОТКА ОТМЕНЫ =================
 @dp.message(Command("cancel"))
-@dp.message(F.text == "❌ Отмена")
+@dp.message(F.text.in_({"❌ Отмена", "❌ Выйти из режима AI"}))
 async def cmd_cancel(message: Message, state: FSMContext):
-    current_state = await state.get_state()
-    if current_state is None:
-        await message.answer("Нет активного действия для отмены.", reply_markup=get_main_keyboard(str(message.from_user.id) == str(ADMIN_ID)))
-        return
-
     await state.clear()
     is_admin = bool(ADMIN_ID and str(message.from_user.id) == str(ADMIN_ID))
-    await message.answer("Действие отменено.", reply_markup=get_main_keyboard(is_admin=is_admin))
+    await message.answer("Вы вернулись в главное меню.", reply_markup=get_main_keyboard(is_admin=is_admin))
 
 
 @dp.message(CommandStart())
@@ -275,11 +284,43 @@ async def cmd_start(message: Message, state: FSMContext):
     welcome_text = (
         f"Здравствуйте, {user.first_name}!\n\n"
         "Добро пожаловать в бота-визитку Алексея Хрипунова.\n\n"
-        "• Нажмите <b>«📱 Открыть визитку»</b> для интерактивного портфолио и калькулятора.\n"
-        "• Нажмите <b>«💼 Предложить проект / оффер»</b>, если вы рекрутер или ищете исполнителя.\n"
+        "• Нажмите <b>«📱 Открыть визитку»</b> для интерактивного портфолио.\n"
+        "• Нажмите <b>«🤖 Спросить AI-ассистента»</b>, чтобы задать любой вопрос нейросети о навыках и опыте Алексея.\n"
+        "• Нажмите <b>«💼 Предложить проект / оффер»</b> для передачи вакансии или заказа.\n"
         "• Нажмите <b>«📄 Скачать резюме»</b> для получения актуального PDF."
     )
     await message.answer(welcome_text, reply_markup=get_main_keyboard(is_admin=is_admin), parse_mode="HTML")
+
+
+# ================= AI-АССИСТЕНТ (GEMINI) =================
+@dp.message(Command("ask"))
+@dp.message(F.text == "🤖 Спросить AI-ассистента")
+async def start_ai_chat(message: Message, state: FSMContext):
+    await state.set_state(AIAssistantState.chatting)
+    text = (
+        "🤖 <b>AI-ассистент готов к диалогу!</b>\n\n"
+        "Вы можете спросить меня о чем угодно, что касается опыта Алексея:\n"
+        "— <i>«Какой опыт у Алексея в Postman и тестировании API?»</i>\n"
+        "— <i>«Пишет ли Алексей автотесты на Python?»</i>\n"
+        "— <i>«Готов ли Алексей к удаленному формату работы?»</i>\n"
+        "— <i>«Какие проекты он создавал на aiogram?»</i>\n\n"
+        "Напишите ваш вопрос ниже 👇\n"
+        "<i>(Для возврата в меню нажмите «❌ Выйти из режима AI»)</i>"
+    )
+    await message.answer(text, reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+
+
+@dp.message(AIAssistantState.chatting)
+async def process_ai_message(message: Message, state: FSMContext):
+    user_text = message.text.strip()
+    if not user_text:
+        return
+
+    # Индикатор набора сообщения в Telegram
+    await bot.send_chat_action(chat_id=message.chat.id, action="typing")
+
+    ai_reply = await ask_gemini(user_text)
+    await message.answer(ai_reply, reply_markup=get_cancel_keyboard())
 
 
 # ================= СЦЕНАРИЙ ДЛЯ РЕКРУТЕРОВ (FSM) =================
@@ -290,7 +331,7 @@ async def start_offer_dialog(message: Message, state: FSMContext):
         "🤝 <b>Отлично! Рад новым предложениям.</b>\n\n"
         "<b>Шаг 1 из 3:</b> Укажите название вашей компании или краткую суть проекта:"
     )
-    await message.answer(text, reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+    await message.answer(text, reply_markup=get_offer_cancel_keyboard(), parse_mode="HTML")
 
 
 @dp.message(OfferState.waiting_for_company)
@@ -303,7 +344,7 @@ async def process_offer_company(message: Message, state: FSMContext):
         "<b>Шаг 2 из 3:</b> Опишите условия работы или вилку:\n"
         "<i>(Например: Полная удаленка, QA Auto / Python, вилка от 120 000 ₽ или проектная задача)</i>"
     )
-    await message.answer(text, reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+    await message.answer(text, reply_markup=get_offer_cancel_keyboard(), parse_mode="HTML")
 
 
 @dp.message(OfferState.waiting_for_conditions)
@@ -316,7 +357,7 @@ async def process_offer_conditions(message: Message, state: FSMContext):
         "<b>Шаг 3 из 3:</b> Укажите контакт для обратной связи:\n"
         "<i>(Ваш @username в Telegram, номер телефона или рабочий Email)</i>"
     )
-    await message.answer(text, reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+    await message.answer(text, reply_markup=get_offer_cancel_keyboard(), parse_mode="HTML")
 
 
 @dp.message(OfferState.waiting_for_contact)
@@ -332,7 +373,6 @@ async def process_offer_contact(message: Message, state: FSMContext):
 
     summary_task = f"ОФФЕР / ВАКАНСИЯ\nКомпания/Проект: {company}\nУсловия: {conditions}"
 
-    # Логируем и шлём админу + в Google Таблицу
     await process_lead(
         name=f"Оффер от {user.first_name or 'Рекрутера'}",
         contact=contact,
@@ -374,7 +414,7 @@ async def cmd_broadcast(message: Message, state: FSMContext):
     await state.set_state(BroadcastState.waiting_for_message)
     await message.answer(
         "📢 <b>Режим рассылки сообщений</b>\n\n"
-        "Отправьте сообщение (текст, фото или документ), которое хотите разослать всем пользователям бота.\n\n"
+        "Отправьте сообщение, которое хотите разослать всем пользователям бота.\n\n"
         "Для отмены отправьте /cancel",
         parse_mode="HTML"
     )
@@ -461,6 +501,20 @@ async def handle_web_app_data(message: Message):
             )
     except Exception as e:
         print(f"Ошибка при обработке web_app_data: {e}")
+
+
+# ================= ПЕРЕХВАТ НЕРАСПОЗНАННЫХ ТЕКСТОВ =================
+@dp.message(F.text)
+async def fallback_text_to_ai(message: Message, state: FSMContext):
+    """Если пользователь просто написал текстовый вопрос без нажатия кнопок — отвечает AI"""
+    current_state = await state.get_state()
+    if current_state is not None:
+        return
+
+    await bot.send_chat_action(chat_id=message.chat.id, action="typing")
+    ai_reply = await ask_gemini(message.text.strip())
+    is_admin = bool(ADMIN_ID and str(message.from_user.id) == str(ADMIN_ID))
+    await message.answer(ai_reply, reply_markup=get_main_keyboard(is_admin=is_admin))
 
 
 # ================= ТОЧКА ВХОДА =================
