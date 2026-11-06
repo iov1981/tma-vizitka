@@ -38,11 +38,11 @@ SYSTEM_INSTRUCTION = """
 4. Если спрашивают о том, чего нет в твоей базе, вежливо ответь, что точные детали лучше уточнить у Алексея напрямую (@iov1981).
 """
 
-# Список моделей из вывода вашего аккаунта
 CANDIDATE_MODELS = [
-    "models/gemini-2.5-flash",
     "models/gemini-3.8-flash",
-    "models/gemini-2.5-flash-lite"
+    "gemini-3.8-flash",
+    "models/gemini-3.5-flash",
+    "models/gemini-3.1-flash-lite"
 ]
 
 WORKING_MODEL = None
@@ -71,6 +71,7 @@ def _generate_reply_sync(api_key: str, user_prompt: str) -> str:
             )
             if response and response.text:
                 WORKING_MODEL = model_name
+                print(f"[Gemini Success] Ответ получен от {model_name}")
                 return response.text.strip()
         except Exception as err:
             last_err = err
