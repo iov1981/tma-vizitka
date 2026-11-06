@@ -38,10 +38,11 @@ SYSTEM_INSTRUCTION = """
 4. Если спрашивают о том, чего нет в твоей базе, вежливо ответь, что точные детали лучше уточнить у Алексея напрямую (@iov1981).
 """
 
+# Приоритет отдан самой быстрой легковесной модели
 TARGET_MODELS = [
-    "gemini-3.8-flash",
     "gemini-3.5-flash-lite",
-    "gemini-3.5-flash"
+    "gemini-3.8-flash",
+    "models/gemini-3.5-flash-lite"
 ]
 
 WORKING_MODEL = None
@@ -65,16 +66,16 @@ def _generate_reply_sync(api_key: str, user_prompt: str) -> str:
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTION,
                     temperature=0.6,
-                    max_output_tokens=600,
+                    max_output_tokens=500,
                 )
             )
             if response and response.text:
                 WORKING_MODEL = model_name
-                print(f"[Gemini Success] Ответ успешно получен от {model_name}!")
+                print(f"[Gemini Success] Ответ получен от {model_name}")
                 return response.text.strip()
         except Exception as err:
             last_err = err
-            print(f"[Gemini Error] Модель {model_name} отклонена: {err}")
+            print(f"[Gemini Error] Модель {model_name} не ответила: {err}")
             continue
 
     raise last_err if last_err else RuntimeError("Не удалось получить ответ от моделей Gemini")
@@ -84,20 +85,21 @@ async def ask_gemini(user_prompt: str) -> str:
     api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
-        print("[Gemini Error] GEMINI_API_KEY не задан в окружении!")
+        print("[Gemini Error] GEMINI_API_KEY не задан!")
         return (
             "🤖 AI-ассистент временно не настроен (отсутствует API-ключ).\n"
             "Вы можете задать вопрос напрямую Алексею: @iov1981"
         )
 
     try:
+        # Увеличен лимит ожидания до 45 секунд
         reply = await asyncio.wait_for(
             asyncio.to_thread(_generate_reply_sync, api_key, user_prompt),
-            timeout=25.0
+            timeout=45.0
         )
         return reply
     except asyncio.TimeoutError:
-        print("[Gemini Timeout] Превышено время ожидания 25с.")
+        print("[Gemini Timeout] Превышено время ожидания 45с.")
         return "🤖 Нейросеть долго формирует ответ. Пожалуйста, попробуйте спросить ещё раз."
     except Exception as e:
         print(f"[Gemini Fatal]: {e}")
