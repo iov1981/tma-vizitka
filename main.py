@@ -106,7 +106,6 @@ async def process_lead(name: str, contact: str, message_text: str, user_id=None,
         except Exception:
             pass
 
-    # 1. Отправка в Google Таблицу
     sheet_payload = {
         "name": name,
         "contact": contact,
@@ -116,7 +115,6 @@ async def process_lead(name: str, contact: str, message_text: str, user_id=None,
     }
     asyncio.create_task(send_to_google_sheets(sheet_payload))
 
-    # 2. Уведомление администратора в Telegram
     admin_text = (
         f"🔥 <b>Новая заявка из Mini App!</b>\n\n"
         f"👤 <b>Имя:</b> {name}\n"
@@ -210,6 +208,7 @@ def get_main_keyboard(is_admin: bool = False):
     )
 
 def get_inline_links():
+    # Telegram Bot API принимает в URL только протоколы http://, https:// или tg://
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -217,8 +216,11 @@ def get_inline_links():
                 InlineKeyboardButton(text="🐙 GitHub", url="https://github.com/iov1981")
             ],
             [
-                InlineKeyboardButton(text="📸 Instagram", url="https://instagram.com/iov1981"),
-                InlineKeyboardButton(text="✉️ Email", url="mailto:hripunov60@gmail.com")
+                InlineKeyboardButton(text="📸 Instagram", url="https://www.instagram.com/iov1981"),
+                InlineKeyboardButton(
+                    text="✉️ Написать на Email",
+                    url="https://mail.google.com/mail/?view=cm&fs=1&to=hripunov60@gmail.com"
+                )
             ]
         ]
     )
@@ -329,7 +331,6 @@ async def send_resume(message: Message):
 
     pdf_path = "resume.pdf"
     try:
-        # Автоматическая генерация свежего резюме
         create_resume(pdf_path)
     except Exception as e:
         print(f"Ошибка при создании PDF: {e}")

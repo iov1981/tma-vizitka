@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Алексей Хрипунов — Визитка разработчика & QA</title>
 
-    <!-- Метатеги OpenGraph для красивого превью ссылки в Telegram и соцсетях -->
+    <!-- Метатеги OpenGraph -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Алексей Хрипунов — Визитка разработчика & QA">
     <meta property="og:description" content="Разработка Telegram-ботов, Mini Apps, автоматизация процессов и внедрение искусственного интеллекта.">
@@ -111,20 +111,22 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 12px;
+            padding: 8px 14px;
             background-color: var(--secondary-bg);
-            border: 1px solid rgba(128, 128, 128, 0.15);
+            border: 1px solid rgba(128, 128, 128, 0.2);
             border-radius: 20px;
             font-size: 13px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-color);
-            text-decoration: none;
+            cursor: pointer;
+            outline: none;
             transition: all 0.2s ease;
+            font-family: inherit;
         }
 
         .contact-chip:active {
             transform: scale(0.96);
-            background-color: rgba(128, 128, 128, 0.15);
+            background-color: rgba(128, 128, 128, 0.2);
         }
 
         .chip-tg { color: #2481cc; }
@@ -229,11 +231,15 @@
         .btn-link {
             font-size: 13px;
             font-weight: 600;
-            text-decoration: none;
             color: var(--link-color);
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            font-family: inherit;
         }
 
         /* Калькулятор стоимости */
@@ -461,26 +467,26 @@
     <!-- Шапка профиля -->
     <header class="profile">
         <div class="avatar-container">
-            <img src="/avatar.jpg?v=5" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
+            <img src="/avatar.jpg?v=6" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
             <span id="avatar-fallback" class="avatar-placeholder">AI</span>
         </div>
         <h1 id="user-name">Алексей Хрипунов</h1>
         <p>Разработка ботов, автоматизация, тестирование и внедрение искусственного интеллекта</p>
 
-        <!-- Быстрые контакты с актуальными данными -->
+        <!-- Кликабельные контакты с прямым вызовом WebApp -->
         <div class="quick-contacts">
-            <a href="https://t.me/iov1981" target="_blank" class="contact-chip chip-tg">
+            <button type="button" class="contact-chip chip-tg" onclick="openExternal('https://t.me/iov1981')">
                 ✈️ Telegram
-            </a>
-            <a href="https://instagram.com/iov1981" target="_blank" class="contact-chip chip-insta">
+            </button>
+            <button type="button" class="contact-chip chip-insta" onclick="openExternal('https://www.instagram.com/iov1981')">
                 📸 Instagram
-            </a>
-            <a href="mailto:hripunov60@gmail.com" class="contact-chip chip-mail">
+            </button>
+            <button type="button" class="contact-chip chip-mail" onclick="openMail('hripunov60@gmail.com')">
                 ✉️ Email
-            </a>
-            <a href="https://github.com/iov1981" target="_blank" class="contact-chip chip-github">
+            </button>
+            <button type="button" class="contact-chip chip-github" onclick="openExternal('https://github.com/iov1981')">
                 🐙 GitHub
-            </a>
+            </button>
         </div>
     </header>
 
@@ -524,7 +530,7 @@
                     <span class="tag">SQLite</span>
                 </div>
                 <div class="project-links">
-                    <a href="https://github.com/iov1981/tma-vizitka" target="_blank" class="btn-link">Репозиторий на GitHub →</a>
+                    <button type="button" class="btn-link" onclick="openExternal('https://github.com/iov1981/tma-vizitka')">Репозиторий на GitHub →</button>
                 </div>
             </div>
 
@@ -695,6 +701,19 @@
         const tg = window.Telegram?.WebApp;
         const urlParams = new URLSearchParams(window.location.search);
         const isAdminParam = urlParams.get('admin') === 'true';
+
+        // Открытие внешних ссылок без блокировки внутри Telegram WebApp
+        function openExternal(url) {
+            if (tg && typeof tg.openLink === 'function') {
+                tg.openLink(url);
+            } else {
+                window.open(url, '_blank');
+            }
+        }
+
+        function openMail(email) {
+            window.location.href = 'mailto:' + email;
+        }
 
         if (tg) {
             tg.ready();
