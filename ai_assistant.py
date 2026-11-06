@@ -40,14 +40,21 @@ SYSTEM_INSTRUCTION = """
 
 
 def _generate_reply_sync(api_key: str, user_prompt: str) -> str:
-    """Синхронный вызов Google GenAI API с актуальной моделью"""
+    """Синхронный вызов с перебором гарантированно существующих моделей Gemini"""
     client = genai.Client(api_key=api_key)
 
-    candidate_models = ["gemini-3.8-flash", "gemini-3.8", "gemini-flash"]
+    # Список реальных доступных моделей Google AI
+    models_to_try = [
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-1.5-flash-latest",
+        "gemini-pro"
+    ]
     last_err = None
 
-    for model_name in candidate_models:
+    for model_name in models_to_try:
         try:
+            print(f"[Gemini] Запрос к модели: {model_name}...")
             response = client.models.generate_content(
                 model=model_name,
                 contents=user_prompt,
@@ -58,32 +65,39 @@ def _generate_reply_sync(api_key: str, user_prompt: str) -> str:
                 )
             )
             if response and response.text:
+                print(f"[Gemini] Успешный ответ от модели: {model_name}")
                 return response.text.strip()
         except Exception as err:
             last_err = err
-            print(f"[Gemini Try Failed] Модель {model_name} вернула ошибку: {err}")
+            print(f"[Gemini Error] Модель {model_name} отклонена: {err}")
             continue
 
-    raise last_err if last_err else RuntimeError("Не удалось получить ответ от моделей Gemini")
+    raise last_err if last_err else RuntimeError("Ни одна из моделей Gemini не вернула ответ.")
 
 
 async def ask_gemini(user_prompt: str) -> str:
-    """Асинхронная обертка для Telegram-бота"""
     api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
-        print("[Gemini Error] Переменная GEMINI_API_KEY не задана!")
+        print("[Gemini Error] Переменная GEMINI_API_KEY не задана на Render!")
         return (
-            "🤖 Извините, AI-ассистент временно не настроен (отсутствует ключ API).\n"
-            "Вы можете задать вопрос напрямую Алексею: @iov1981"
+            "🤖 AI-ассистент временно не настроен (отсутствует API-ключ).\n"
+            "Вы можете связаться с Алексеем напрямую: @iov1981"
         )
 
     try:
-        reply = await asyncio.to_thread(_generate_reply_sync, api_key, user_prompt)
+        # Устанавливаем жесткий таймаут 20 секунд, чтобы бот не молчал вечно
+        reply = await asyncio.wait_for(
+            asyncio.to_thread(_generate_reply_sync, api_key, user_prompt),
+            timeout=20.0
+        )
         return reply
+    except asyncio.TimeoutError:
+        print("[Gemini Error] Превышено время ожидания ответа (таймаут 20с).")
+        return "🤖 Сервер искусственного интеллекта не успел ответить вовремя. Пожалуйста, попробуйте спросить ещё раз."
     except Exception as e:
-        print(f"[Gemini Exception]: {e}")
+        print(f"[Gemini Fatal Error]: {e}")
         return (
-            "🤖 Произошла небольшая заминка при обработке запроса нейросетью.\n"
-            "Пожалуйста, повторите вопрос или напишите Алексею лично: @iov1981"
+            "🤖 Произошла заминка при обращении к нейросети.\n"
+            "Вы можете написать Алексею лично: @iov1981"
         )
