@@ -38,37 +38,28 @@ SYSTEM_INSTRUCTION = """
 4. Если спрашивают о том, чего нет в твоей базе, вежливо ответь, что точные детали лучше уточнить у Алексея напрямую (@iov1981).
 """
 
-CACHED_MODEL = None
+# Список моделей из вывода вашего аккаунта
+CANDIDATE_MODELS = [
+    "models/gemini-2.5-flash",
+    "models/gemini-3.8-flash",
+    "models/gemini-2.5-flash-lite"
+]
 
-
-def _get_client(api_key: str):
-    # Принудительно подключаем v1alpha для полной совместимости со всеми моделями 2026 года
-    return genai.Client(
-        api_key=api_key,
-        http_options={"api_version": "v1alpha"}
-    )
+WORKING_MODEL = None
 
 
 def _generate_reply_sync(api_key: str, user_prompt: str) -> str:
-    global CACHED_MODEL
-    client = _get_client(api_key)
+    global WORKING_MODEL
+    client = genai.Client(api_key=api_key)
 
-    # Список актуальных имен моделей
-    models_to_check = [
-        CACHED_MODEL,
-        "gemini-2.0-flash",
-        "gemini-2.0-flash-exp",
-        "gemini-1.5-flash",
-        "gemini-1.5-flash-8b",
-        "gemini-2.5-flash"
-    ]
+    models_to_try = [WORKING_MODEL] + CANDIDATE_MODELS if WORKING_MODEL else CANDIDATE_MODELS
+    last_err = None
 
-    last_error = None
-    for model_name in models_to_check:
+    for model_name in models_to_try:
         if not model_name:
             continue
         try:
-            print(f"[Gemini] Пробуем вызвать модель: {model_name}...")
+            print(f"[Gemini] Запрос к модели: {model_name}")
             response = client.models.generate_content(
                 model=model_name,
                 contents=user_prompt,
@@ -79,22 +70,21 @@ def _generate_reply_sync(api_key: str, user_prompt: str) -> str:
                 )
             )
             if response and response.text:
-                CACHED_MODEL = model_name
-                print(f"[Gemini Success] Успешный ответ от модели: {model_name}")
+                WORKING_MODEL = model_name
                 return response.text.strip()
-        except Exception as e:
-            last_error = e
-            print(f"[Gemini Error] Модель {model_name} не сработала: {e}")
+        except Exception as err:
+            last_err = err
+            print(f"[Gemini Error] Модель {model_name} вернула ошибку: {err}")
             continue
 
-    raise last_error if last_error else RuntimeError("Ни одна из моделей Gemini не вернула ответ")
+    raise last_err if last_err else RuntimeError("Не удалось получить ответ от моделей Gemini")
 
 
 async def ask_gemini(user_prompt: str) -> str:
     api_key = os.getenv("GEMINI_API_KEY")
 
     if not api_key:
-        print("[Gemini Error] Переменная GEMINI_API_KEY не задана в окружении!")
+        print("[Gemini Error] GEMINI_API_KEY не задан в окружении!")
         return (
             "🤖 AI-ассистент временно не настроен (отсутствует API-ключ).\n"
             "Вы можете задать вопрос напрямую Алексею: @iov1981"
@@ -108,7 +98,7 @@ async def ask_gemini(user_prompt: str) -> str:
         return reply
     except asyncio.TimeoutError:
         print("[Gemini Timeout] Превышено время ожидания 25с.")
-        return "🤖 Нейросеть не успела ответить вовремя. Пожалуйста, попробуйте повторить вопрос."
+        return "🤖 Нейросеть долго формирует ответ. Пожалуйста, попробуйте спросить ещё раз."
     except Exception as e:
         print(f"[Gemini Fatal]: {e}")
         return (
