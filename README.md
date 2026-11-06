@@ -1,48 +1,124 @@
-# 💼 Telegram-бот визитка & Mini App
+# 📱 Telegram Mini App & Bot «Визитка разработчика»
 
-Интерактивная цифровая визитка и портфолио QA-инженера и Python-разработчика. Проект совмещает функционал Telegram-бота на **aiogram 3** и веб-интерфейс **Telegram Mini App** (TMA), развёрнутый на GitHub Pages.
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![Aiogram 3](https://img.shields.io/badge/Aiogram-3.x-2481cc.svg)](https://docs.aiogram.dev/)
+[![Render](https://img.shields.io/badge/Deploy-Render-46E3B7.svg)](https://render.com/)
+[![SQLite](https://img.shields.io/badge/Database-SQLite-003B57.svg)](https://www.sqlite.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
----
-
-## 🚀 Основной функционал
-
-### 🤖 Telegram-бот
-- **Интерактивное меню:** быстрый доступ к информации обо мне, стеку навыков и проектам.
-- **Генерация и скачивание PDF:** создание актуального резюме на лету с помощью `reportlab`.
-- **Генерация QR-кода:** мгновенное создание персонального QR-кода (`qrcode`, `pillow`) для перехода в Mini App.
-- **Сбор статистики (SQLite):** учёт уникальных посетителей и активности за день (`aiosqlite`). Скрытая команда `/stats` для администратора.
-- **Система отзывов:** возможность для гостей оценить бота от 1 до 5 звёзд с отправкой отзыва в базу данных и уведомлением в личные сообщения админу.
-- **Обратная связь:** отправка сообщений автору с возможностью прямого ответа пользователю через Telegram Reply.
-- **Inline-режим:** возможность делиться карточкой визитки в любом чате Telegram.
-- **Keep-Alive сервер:** встроенный микросервер на `aiohttp` для поддержания круглосуточной активности бота на бесплатных облачных тарифах (Render).
-
-### 📱 Telegram Mini App
-- Современный адаптивный UI с поддержкой тёмной/светлой темы Telegram.
-- Вкладки навигации: *Профиль*, *Проекты*, *Стек*, *Связь*.
-- Тактильный виброотклик (`HapticFeedback`) при взаимодействии с элементами.
-- Быстрое копирование контактов в буфер обмена.
+Многофункциональный Telegram-бот и встроенное веб-приложение (Telegram Mini App), выполняющие роль интерактивного портфолио, инструмента для автоматического сбора лидов (CRM-интеграция) и генератора резюме в формате PDF с динамическими QR-кодами.
 
 ---
 
-## 🛠 Стек технологий
+## 🚀 Ключевые возможности
 
-- **Язык:** Python 3.10+
-- **Фреймворк для бота:** aiogram 3.x
-- **База данных:** SQLite (`aiosqlite`)
-- **Формирование документов:** ReportLab, qrcode, Pillow
-- **Веб-сервер Keep-Alive:** aiohttp
-- **Фронтенд Mini App:** HTML5, CSS3 (Glassmorphism), Vanilla JavaScript, Telegram WebApp SDK
-- **Хостинг:** Render (бэкенд) + GitHub Pages (фронтенд)
+- **Интерактивный интерфейс Telegram Mini App (TMA):**
+  - Адаптивный дизайн под светлую и тёмную темы Telegram.
+  - Карточки проектов с технологическими стеками и ссылками на репозитории.
+  - Интерактивный калькулятор стоимости разработки с автоматическим формированием брифа в форму заявки.
+  - FAQ-аккордеон с ответами на частые вопросы и виброоткликом (HapticFeedback).
+  - Нативная функция шаринга («Поделиться визиткой») в любой чат Telegram в один клик.
+  - Кликабельные контакты (Telegram, Instagram, Email, GitHub) без блокировок во встроенном браузере WebView.
+
+- **Двухканальная лидогенерация (Telegram + Google Sheets):**
+  - Мгновенная отправка данных заявки в личный чат администратора с подробностями выбранных услуг.
+  - Автоматическая синхронизация через Webhook в Google Таблицу (дата, имя, контакт, бриф/бюджет, TG ID, username).
+  - Поддержка отправки как через Telegram `sendData`, так и через прямой HTTP API эндпоинт с защитой CORS.
+
+- **Генерация PDF-резюме на лету (ReportLab):**
+  - Формирование структурированного резюме в формате PDF по запросу пользователя.
+  - Генерация динамического QR-кода со стабильной ссылкой на запуск Mini App визитки.
+  - Поддержка кириллических шрифтов (DejaVu / Arial).
+
+- **Панель управления и аналитика:**
+  - Автоматический трекинг посетителей, скачиваний резюме и отправленных заявок в базе данных SQLite.
+  - Команда `/stats` для просмотра статистики просмотров и конверсий (доступна только администратору).
+  - Команда `/broadcast` для безопасной рассылки сообщений пользователям бота.
+  - Специальный режим владельца: при входе администратора форма заявки автоматически скрывается.
+
+---
+
+## 🛠 Технологический стек
+
+- **Backend:** Python 3, `aiogram 3` (асинхронный фреймворк для Telegram Bot API), `aiohttp` (встроенный HTTP веб-сервер и обработка API), `asyncio`.
+- **Frontend (Mini App):** HTML5, Modern CSS3 (CSS Variables, Telegram Theme Params), JavaScript (Vanilla JS, Telegram WebApp SDK).
+- **База данных:** SQLite, `aiosqlite` (асинхронные транзакции).
+- **Документооборот:** `ReportLab` (генерация PDF), `qrcode`, `Pillow`.
+- **Интеграции:** Google Sheets API (через Google Apps Script Webhook).
+- **Хостинг & Инфраструктура:** Облачный сервис Render (развёртывание веб-сервиса с 24/7 Keep-Alive мониторингом).
 
 ---
 
 ## 📂 Структура проекта
 
 ```text
-├── .gitignore             # Исключения версионного контроля (.env, база данных)
-├── database.py            # Модуль работы с базой данных SQLite
-├── generate_resume.py     # Скрипт генерации PDF-резюме
-├── index.html             # Исходный код Telegram Mini App
-├── main.py                # Основная точка входа и логика бота
-├── README.md              # Документация проекта
-└── requirements.txt       # Список внешних зависимостей
+├── database.py             # Асинхронные методы работы с базой данных SQLite
+├── generate_resume.py      # Модуль генерации PDF-резюме и QR-кода
+├── index.html              # Frontend-код Telegram Mini App (TMA)
+├── main.py                 # Точка входа: Telegram-бот, веб-сервер и роутинг API
+├── Procfile                # Инструкция запуска для облачных PaaS-платформ
+├── requirements.txt        # Список зависимостей Python
+├── resume.pdf              # Автоматически генерируемый файл резюме
+└── .env                    # Конфигурационные токены и переменные окружения
+git clone [https://github.com/iov1981/tma-vizitka.git](https://github.com/iov1981/tma-vizitka.git)
+cd tma-vizitka
+
+
+# Для Windows:
+python -m venv .venv
+.venv\Scripts\activate
+
+# Для Linux / macOS:
+python3 -m venv .venv
+source .venv/bin/activate
+
+
+pip install -r requirements.txt
+
+
+BOT_TOKEN=your_telegram_bot_token_from_botfather
+ADMIN_ID=your_telegram_numeric_id
+PORT=8080
+RENDER_EXTERNAL_URL=[https://your-app-domain.onrender.com](https://your-app-domain.onrender.com)
+GOOGLE_SHEETS_WEBHOOK_URL=[https://script.google.com/macros/s/your_script_id/exec](https://script.google.com/macros/s/your_script_id/exec)
+
+
+python main.py
+
+
+Развёртывание на Render
+Создайте новый Web Service на Render.com.
+
+Подключите ваш GitHub-репозиторий tma-vizitka.
+
+Задайте параметры сервиса:
+
+Environment: Python 3
+
+Build Command: pip install -r requirements.txt
+
+Start Command: python main.py
+
+В разделе Environment Variables добавьте переменные:
+
+BOT_TOKEN
+
+ADMIN_ID
+
+PORT: 8080
+
+RENDER_EXTERNAL_URL: публичный URL вашего сервиса
+
+GOOGLE_SHEETS_WEBHOOK_URL: ссылка на развёрнутый вебхук Google Apps Script.
+
+
+👨‍💻 Автор
+Алексей Хрипунов
+
+Telegram: @iov1981
+
+Instagram: @iov1981
+
+Email: hripunov60@gmail.com
+
+GitHub: iov1981
