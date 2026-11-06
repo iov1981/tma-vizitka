@@ -38,11 +38,10 @@ SYSTEM_INSTRUCTION = """
 4. Если спрашивают о том, чего нет в твоей базе, вежливо ответь, что точные детали лучше уточнить у Алексея напрямую (@iov1981).
 """
 
-CANDIDATE_MODELS = [
-    "models/gemini-3.8-flash",
+TARGET_MODELS = [
     "gemini-3.8-flash",
-    "models/gemini-3.5-flash",
-    "models/gemini-3.1-flash-lite"
+    "gemini-3.5-flash-lite",
+    "gemini-3.5-flash"
 ]
 
 WORKING_MODEL = None
@@ -52,7 +51,7 @@ def _generate_reply_sync(api_key: str, user_prompt: str) -> str:
     global WORKING_MODEL
     client = genai.Client(api_key=api_key)
 
-    models_to_try = [WORKING_MODEL] + CANDIDATE_MODELS if WORKING_MODEL else CANDIDATE_MODELS
+    models_to_try = [WORKING_MODEL] + TARGET_MODELS if WORKING_MODEL else TARGET_MODELS
     last_err = None
 
     for model_name in models_to_try:
@@ -71,11 +70,11 @@ def _generate_reply_sync(api_key: str, user_prompt: str) -> str:
             )
             if response and response.text:
                 WORKING_MODEL = model_name
-                print(f"[Gemini Success] Ответ получен от {model_name}")
+                print(f"[Gemini Success] Ответ успешно получен от {model_name}!")
                 return response.text.strip()
         except Exception as err:
             last_err = err
-            print(f"[Gemini Error] Модель {model_name} вернула ошибку: {err}")
+            print(f"[Gemini Error] Модель {model_name} отклонена: {err}")
             continue
 
     raise last_err if last_err else RuntimeError("Не удалось получить ответ от моделей Gemini")
