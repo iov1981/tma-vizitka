@@ -17,6 +17,7 @@ from aiogram.types import (
     InlineKeyboardButton,
     ReplyKeyboardMarkup,
     KeyboardButton,
+    ReplyKeyboardRemove,
     WebAppInfo,
     BotCommand,
     BotCommandScopeChat,
@@ -54,11 +55,18 @@ class BroadcastState(StatesGroup):
     waiting_for_message = State()
 
 
+class OfferState(StatesGroup):
+    waiting_for_company = State()
+    waiting_for_conditions = State()
+    waiting_for_contact = State()
+
+
 # ================= НАСТРОЙКА МЕНЮ =================
 async def setup_bot_commands():
     try:
         default_commands = [
-            BotCommand(command="start", description="Перезапустить бота / Меню")
+            BotCommand(command="start", description="Перезапустить бота / Меню"),
+            BotCommand(command="cancel", description="Отменить текущее действие")
         ]
         await bot.set_my_commands(default_commands, scope=BotCommandScopeDefault())
 
@@ -66,7 +74,8 @@ async def setup_bot_commands():
             admin_commands = [
                 BotCommand(command="start", description="Перезапустить бота"),
                 BotCommand(command="stats", description="📊 Статистика просмотров и заявок"),
-                BotCommand(command="broadcast", description="📢 Отправить рассылку пользователям")
+                BotCommand(command="broadcast", description="📢 Отправить рассылку пользователям"),
+                BotCommand(command="cancel", description="Отменить текущее действие")
             ]
             await bot.set_my_commands(
                 admin_commands,
@@ -130,8 +139,6 @@ async def process_lead(name: str, contact: str, message_text: str, user_id=None,
             print(f"[Lead] Уведомление успешно доставлено администратору {ADMIN_ID}.")
         except Exception as e:
             print(f"[Lead Error] Ошибка отправки уведомления администратору в Telegram: {e}")
-    else:
-        print("[Lead Warning] ADMIN_ID не настроен, уведомление в Telegram не отправлено.")
 
 
 # ================= ВЕБ-СЕРВЕР И CORS =================
@@ -200,6 +207,9 @@ def get_main_keyboard(is_admin: bool = False):
                 KeyboardButton(text="📱 Открыть визитку", web_app=WebAppInfo(url=web_app_url))
             ],
             [
+                KeyboardButton(text="💼 Предложить проект / оффер")
+            ],
+            [
                 KeyboardButton(text="📄 Скачать резюме (PDF)"),
                 KeyboardButton(text="ℹ️ Обо мне")
             ]
@@ -207,8 +217,13 @@ def get_main_keyboard(is_admin: bool = False):
         resize_keyboard=True
     )
 
+def get_cancel_keyboard():
+    return ReplyKeyboardMarkup(
+        keyboard=[[KeyboardButton(text="❌ Отмена")]],
+        resize_keyboard=True
+    )
+
 def get_inline_links():
-    # Telegram Bot API принимает в URL только протоколы http://, https:// или tg://
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -227,6 +242,19 @@ def get_inline_links():
 
 
 # ================= ХЕНДЛЕРЫ БОТА =================
+@dp.message(Command("cancel"))
+@dp.message(F.text == "❌ Отмена")
+async def cmd_cancel(message: Message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state is None:
+        await message.answer("Нет активного действия для отмены.", reply_markup=get_main_keyboard(str(message.from_user.id) == str(ADMIN_ID)))
+        return
+
+    await state.clear()
+    is_admin = bool(ADMIN_ID and str(message.from_user.id) == str(ADMIN_ID))
+    await message.answer("Действие отменено.", reply_markup=get_main_keyboard(is_admin=is_admin))
+
+
 @dp.message(CommandStart())
 async def cmd_start(message: Message, state: FSMContext):
     await state.clear()
@@ -246,13 +274,81 @@ async def cmd_start(message: Message, state: FSMContext):
 
     welcome_text = (
         f"Здравствуйте, {user.first_name}!\n\n"
-        "Добро пожаловать в бота-визитку.\n"
-        "Здесь вы можете посмотреть мои проекты, узнать о направлениях работы с ИИ, "
-        "скачать PDF-резюме или открыть интерактивное приложение."
+        "Добро пожаловать в бота-визитку Алексея Хрипунова.\n\n"
+        "• Нажмите <b>«📱 Открыть визитку»</b> для интерактивного портфолио и калькулятора.\n"
+        "• Нажмите <b>«💼 Предложить проект / оффер»</b>, если вы рекрутер или ищете исполнителя.\n"
+        "• Нажмите <b>«📄 Скачать резюме»</b> для получения актуального PDF."
     )
-    await message.answer(welcome_text, reply_markup=get_main_keyboard(is_admin=is_admin))
+    await message.answer(welcome_text, reply_markup=get_main_keyboard(is_admin=is_admin), parse_mode="HTML")
 
 
+# ================= СЦЕНАРИЙ ДЛЯ РЕКРУТЕРОВ (FSM) =================
+@dp.message(F.text == "💼 Предложить проект / оффер")
+async def start_offer_dialog(message: Message, state: FSMContext):
+    await state.set_state(OfferState.waiting_for_company)
+    text = (
+        "🤝 <b>Отлично! Рад новым предложениям.</b>\n\n"
+        "<b>Шаг 1 из 3:</b> Укажите название вашей компании или краткую суть проекта:"
+    )
+    await message.answer(text, reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+
+
+@dp.message(OfferState.waiting_for_company)
+async def process_offer_company(message: Message, state: FSMContext):
+    company = message.text.strip()
+    await state.update_data(company=company)
+    await state.set_state(OfferState.waiting_for_conditions)
+
+    text = (
+        "<b>Шаг 2 из 3:</b> Опишите условия работы или вилку:\n"
+        "<i>(Например: Полная удаленка, QA Auto / Python, вилка от 120 000 ₽ или проектная задача)</i>"
+    )
+    await message.answer(text, reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+
+
+@dp.message(OfferState.waiting_for_conditions)
+async def process_offer_conditions(message: Message, state: FSMContext):
+    conditions = message.text.strip()
+    await state.update_data(conditions=conditions)
+    await state.set_state(OfferState.waiting_for_contact)
+
+    text = (
+        "<b>Шаг 3 из 3:</b> Укажите контакт для обратной связи:\n"
+        "<i>(Ваш @username в Telegram, номер телефона или рабочий Email)</i>"
+    )
+    await message.answer(text, reply_markup=get_cancel_keyboard(), parse_mode="HTML")
+
+
+@dp.message(OfferState.waiting_for_contact)
+async def process_offer_contact(message: Message, state: FSMContext):
+    contact = message.text.strip()
+    data = await state.get_data()
+    await state.clear()
+
+    company = data.get("company", "Не указано")
+    conditions = data.get("conditions", "Не указано")
+    user = message.from_user
+    is_admin = bool(ADMIN_ID and str(user.id) == str(ADMIN_ID))
+
+    summary_task = f"ОФФЕР / ВАКАНСИЯ\nКомпания/Проект: {company}\nУсловия: {conditions}"
+
+    # Логируем и шлём админу + в Google Таблицу
+    await process_lead(
+        name=f"Оффер от {user.first_name or 'Рекрутера'}",
+        contact=contact,
+        message_text=summary_task,
+        user_id=user.id,
+        username=user.username
+    )
+
+    success_text = (
+        "✅ <b>Спасибо! Ваше предложение успешно передано Алексею.</b>\n\n"
+        "Я ознакомлюсь с деталями и свяжусь с вами в ближайшее время."
+    )
+    await message.answer(success_text, reply_markup=get_main_keyboard(is_admin=is_admin), parse_mode="HTML")
+
+
+# ================= КОМАНДЫ АДМИНИСТРАТОРА =================
 @dp.message(Command("stats"))
 async def cmd_stats(message: Message):
     user_id = message.from_user.id
@@ -264,7 +360,7 @@ async def cmd_stats(message: Message):
         "📊 <b>Статистика бота-визитки:</b>\n\n"
         f"👥 Всего уникальных пользователей: <b>{stats['total_users']}</b>\n"
         f"📥 Скачиваний резюме (PDF): <b>{stats['resume_downloads']}</b>\n"
-        f"✉️ Отправлено заявок через Mini App: <b>{stats['leads_count']}</b>"
+        f"✉️ Отправлено заявок и офферов: <b>{stats['leads_count']}</b>"
     )
     await message.answer(text, parse_mode="HTML")
 
@@ -282,12 +378,6 @@ async def cmd_broadcast(message: Message, state: FSMContext):
         "Для отмены отправьте /cancel",
         parse_mode="HTML"
     )
-
-
-@dp.message(Command("cancel"))
-async def cmd_cancel(message: Message, state: FSMContext):
-    await state.clear()
-    await message.answer("Действие отменено.")
 
 
 @dp.message(BroadcastState.waiting_for_message)
@@ -309,9 +399,7 @@ async def process_broadcast_message(message: Message, state: FSMContext):
             await message.copy_to(chat_id=uid)
             success += 1
             await asyncio.sleep(0.05)
-        except TelegramForbiddenError:
-            blocked += 1
-        except TelegramBadRequest:
+        except (TelegramForbiddenError, TelegramBadRequest):
             blocked += 1
         except Exception:
             blocked += 1
@@ -325,6 +413,7 @@ async def process_broadcast_message(message: Message, state: FSMContext):
     await status_msg.edit_text(report_text, parse_mode="HTML")
 
 
+# ================= ДРУГИЕ КНОПКИ =================
 @dp.message(F.text == "📄 Скачать резюме (PDF)")
 async def send_resume(message: Message):
     await db.log_event(message.from_user.id, "resume_download")
