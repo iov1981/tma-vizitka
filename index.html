@@ -130,6 +130,14 @@
         }
 
         .chip-tg { color: #2481cc; }
+        .chip-share {
+            color: #ffffff;
+            background-color: var(--button-color);
+            border-color: var(--button-color);
+        }
+        .chip-share:active {
+            opacity: 0.85;
+        }
         .chip-insta { color: #e1306c; }
         .chip-mail { color: #ea4335; }
         .chip-github { color: var(--text-color); }
@@ -467,16 +475,19 @@
     <!-- Шапка профиля -->
     <header class="profile">
         <div class="avatar-container">
-            <img src="/avatar.jpg?v=6" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
+            <img src="/avatar.jpg?v=7" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
             <span id="avatar-fallback" class="avatar-placeholder">AI</span>
         </div>
         <h1 id="user-name">Алексей Хрипунов</h1>
         <p>Разработка ботов, автоматизация, тестирование и внедрение искусственного интеллекта</p>
 
-        <!-- Кликабельные контакты с прямым вызовом WebApp -->
+        <!-- Кнопки контактов и шаринга -->
         <div class="quick-contacts">
             <button type="button" class="contact-chip chip-tg" onclick="openExternal('https://t.me/iov1981')">
                 ✈️ Telegram
+            </button>
+            <button type="button" class="contact-chip chip-share" onclick="shareMiniApp()">
+                🔗 Поделиться визиткой
             </button>
             <button type="button" class="contact-chip chip-insta" onclick="openExternal('https://www.instagram.com/iov1981')">
                 📸 Instagram
@@ -713,6 +724,24 @@
 
         function openMail(email) {
             window.location.href = 'mailto:' + email;
+        }
+
+        // Поделиться Mini App через список чатов Telegram
+        function shareMiniApp() {
+            const shareUrl = "https://t.me/aleksey_qa_vizitka_bot?startapp=open";
+            const shareText = "Привет! Посмотри визитку и портфолио Алексея Хрипунова (QA Engineer & Python Developer):";
+
+            const telegramShareLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+
+            if (tg && typeof tg.openTelegramLink === 'function') {
+                tg.openTelegramLink(telegramShareLink);
+            } else {
+                window.open(telegramShareLink, '_blank');
+            }
+
+            if (tg?.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
         }
 
         if (tg) {

@@ -9,9 +9,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 
 def generate_bot_qr(filename="bot_qr.png"):
-    """Генерация QR-кода со ссылкой на бота для визиток и контактной карточкой"""
-    # Ссылка на бота визитки
-    bot_url = "https://t.me/aleksey_qa_vizitka_bot"
+    """Генерация QR-кода с прямой ссылкой на запуск Mini App визитки"""
+    miniapp_url = "https://t.me/aleksey_qa_vizitka_bot?startapp=open"
 
     qr = qrcode.QRCode(
         version=1,
@@ -19,7 +18,7 @@ def generate_bot_qr(filename="bot_qr.png"):
         box_size=6,
         border=1,
     )
-    qr.add_data(bot_url)
+    qr.add_data(miniapp_url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="#2563eb", back_color="white")
     img.save(filename)
@@ -101,7 +100,7 @@ def create_resume(output_filename="resume.pdf"):
 
     story = []
 
-    # 1. Шапка резюме с контактами и QR-кодом бота
+    # 1. Шапка резюме с контактами и QR-кодом Mini App
     qr_path = generate_bot_qr()
 
     header_text = [
@@ -111,7 +110,7 @@ def create_resume(output_filename="resume.pdf"):
         Spacer(1, 4),
         Paragraph("<b>Telegram:</b> @iov1981 | <b>Email:</b> hripunov60@gmail.com", body_style),
         Paragraph("<b>Instagram:</b> @iov1981 | <b>GitHub:</b> github.com/iov1981", body_style),
-        Paragraph("<i>QR-код справа ведёт в Telegram-бот визитку: @aleksey_qa_vizitka_bot</i>", body_style)
+        Paragraph("<i>QR-код справа открывает Mini App визитку: @aleksey_qa_vizitka_bot</i>", body_style)
     ]
 
     header_table = Table([[header_text, Image(qr_path, width=72, height=72)]], colWidths=[445, 95])
