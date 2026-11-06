@@ -9,8 +9,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 
 def generate_bot_qr(filename="bot_qr.png"):
-    """Генерация QR-кода с прямой ссылкой на запуск Mini App визитки"""
-    miniapp_url = "https://t.me/aleksey_qa_vizitka_bot?startapp=open"
+    """Генерация QR-кода со стабильной ссылкой на бота для визиток"""
+    miniapp_url = "https://t.me/aleksey_qa_vizitka_bot?start=open"
 
     qr = qrcode.QRCode(
         version=1,
@@ -100,7 +100,7 @@ def create_resume(output_filename="resume.pdf"):
 
     story = []
 
-    # 1. Шапка резюме с контактами и QR-кодом Mini App
+    # 1. Шапка резюме с контактами и QR-кодом бота
     qr_path = generate_bot_qr()
 
     header_text = [
@@ -110,7 +110,7 @@ def create_resume(output_filename="resume.pdf"):
         Spacer(1, 4),
         Paragraph("<b>Telegram:</b> @iov1981 | <b>Email:</b> hripunov60@gmail.com", body_style),
         Paragraph("<b>Instagram:</b> @iov1981 | <b>GitHub:</b> github.com/iov1981", body_style),
-        Paragraph("<i>QR-код справа открывает Mini App визитку: @aleksey_qa_vizitka_bot</i>", body_style)
+        Paragraph("<i>QR-код справа открывает бота-визитку: @aleksey_qa_vizitka_bot</i>", body_style)
     ]
 
     header_table = Table([[header_text, Image(qr_path, width=72, height=72)]], colWidths=[445, 95])

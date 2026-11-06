@@ -475,7 +475,7 @@
     <!-- Шапка профиля -->
     <header class="profile">
         <div class="avatar-container">
-            <img src="/avatar.jpg?v=7" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
+            <img src="/avatar.jpg?v=8" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
             <span id="avatar-fallback" class="avatar-placeholder">AI</span>
         </div>
         <h1 id="user-name">Алексей Хрипунов</h1>
@@ -726,9 +726,9 @@
             window.location.href = 'mailto:' + email;
         }
 
-        // Поделиться Mini App через список чатов Telegram
+        // Поделиться Mini App через список чатов Telegram со стабильным параметром ?start=open
         function shareMiniApp() {
-            const shareUrl = "https://t.me/aleksey_qa_vizitka_bot?startapp=open";
+            const shareUrl = "https://t.me/aleksey_qa_vizitka_bot?start=open";
             const shareText = "Привет! Посмотри визитку и портфолио Алексея Хрипунова (QA Engineer & Python Developer):";
 
             const telegramShareLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
