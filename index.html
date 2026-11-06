@@ -2,919 +2,697 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Алексей Хрипунов — Визитка разработчика & QA</title>
-
-    <!-- Метатеги OpenGraph -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Алексей Хрипунов — Визитка разработчика & QA">
-    <meta property="og:description" content="Разработка Telegram-ботов, Mini Apps, автоматизация процессов и внедрение искусственного интеллекта.">
-    <meta property="og:url" content="https://tma-vizitka.onrender.com">
-    <meta property="og:image" content="https://tma-vizitka.onrender.com/avatar.jpg">
-    <meta property="og:image:width" content="500">
-    <meta property="og:image:height" content="500">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Алексей Хрипунов — Визитка разработчика & QA">
-    <meta name="twitter:description" content="Разработка Telegram-ботов, Mini Apps, автоматизация процессов и внедрение искусственного интеллекта.">
-    <meta name="twitter:image" content="https://tma-vizitka.onrender.com/avatar.jpg">
-
-    <!-- Telegram Web App SDK -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Алексей Хрипунов | QA & Python Dev</title>
+    <!-- Telegram Web App JS SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --bg-color: var(--tg-theme-bg-color, #ffffff);
-            --secondary-bg: var(--tg-theme-secondary-bg-color, #f4f4f5);
-            --text-color: var(--tg-theme-text-color, #000000);
-            --hint-color: var(--tg-theme-hint-color, #8e8e93);
-            --button-color: var(--tg-theme-button-color, #2481cc);
-            --button-text: var(--tg-theme-button-text-color, #ffffff);
-            --link-color: var(--tg-theme-link-color, #2481cc);
+            --bg-color: var(--tg-theme-bg-color, #0f172a);
+            --secondary-bg: var(--tg-theme-secondary-bg-color, #1e293b);
+            --text-color: var(--tg-theme-text-color, #f8fafc);
+            --hint-color: var(--tg-theme-hint-color, #94a3b8);
+            --button-color: var(--tg-theme-button-color, #38bdf8);
+            --button-text: var(--tg-theme-button-text-color, #0f172a);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-glow: rgba(56, 189, 248, 0.15);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            padding-bottom: 90px;
         }
 
-        /* Профиль и Аватар */
+        /* Шапка с профилем и переключателем языка */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
         .profile {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            text-align: center;
-            gap: 10px;
-            padding: 10px 0 0 0;
+            gap: 14px;
         }
 
-        .avatar-container {
-            width: 86px;
-            height: 86px;
+        .avatar {
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            border: 2px solid var(--button-color);
-            background: linear-gradient(135deg, #2481cc, #39b3ff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .avatar-img {
-            width: 100%;
-            height: 100%;
             object-fit: cover;
-            display: block;
+            border: 2px solid var(--button-color);
+            box-shadow: 0 0 12px var(--accent-glow);
         }
 
-        .avatar-placeholder {
-            color: #ffffff;
-            font-size: 32px;
-            font-weight: bold;
-            display: none;
-        }
-
-        .profile h1 {
-            font-size: 20px;
+        .name-role h1 {
+            font-size: 18px;
             font-weight: 700;
         }
 
-        .profile p {
-            font-size: 14px;
-            color: var(--hint-color);
-            max-width: 320px;
-        }
-
-        /* Быстрые контакты */
-        .quick-contacts {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 6px;
-        }
-
-        .contact-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            background-color: var(--secondary-bg);
-            border: 1px solid rgba(128, 128, 128, 0.2);
-            border-radius: 20px;
+        .name-role p {
             font-size: 13px;
-            font-weight: 600;
-            color: var(--text-color);
-            cursor: pointer;
-            outline: none;
-            transition: all 0.2s ease;
-            font-family: inherit;
-        }
-
-        .contact-chip:active {
-            transform: scale(0.96);
-            background-color: rgba(128, 128, 128, 0.2);
-        }
-
-        .chip-tg { color: #2481cc; }
-        .chip-share {
-            color: #ffffff;
-            background-color: var(--button-color);
-            border-color: var(--button-color);
-        }
-        .chip-share:active {
-            opacity: 0.85;
-        }
-        .chip-insta { color: #e1306c; }
-        .chip-mail { color: #ea4335; }
-        .chip-github { color: var(--text-color); }
-
-        /* Заголовки */
-        .section-title {
-            font-size: 17px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-color);
-        }
-
-        /* Сетка карточек проектов */
-        .projects-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .project-card {
-            background-color: var(--secondary-bg);
-            border-radius: 14px;
-            padding: 14px;
-            border: 1px solid rgba(128, 128, 128, 0.12);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            transition: transform 0.1s ease;
-        }
-
-        .project-card:active {
-            transform: scale(0.99);
-        }
-
-        .project-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .project-header h3 {
-            margin: 0;
-            font-size: 15px;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .badge {
-            font-size: 11px;
-            font-weight: 500;
-            padding: 3px 8px;
-            border-radius: 12px;
-            background-color: var(--button-color);
-            color: var(--button-text);
-            white-space: nowrap;
-        }
-
-        .badge-ai {
-            background: linear-gradient(135deg, #8a2be2, #4a00e0);
-            color: #ffffff;
-        }
-
-        .badge-qa {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: #ffffff;
-        }
-
-        .project-desc {
-            margin: 0;
-            font-size: 13px;
-            line-height: 1.4;
             color: var(--hint-color);
-        }
-
-        .project-stack {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
             margin-top: 2px;
         }
 
-        .tag {
-            font-size: 11px;
-            background-color: rgba(128, 128, 128, 0.15);
+        .lang-btn {
+            background: var(--secondary-bg);
+            border: 1px solid var(--card-border);
             color: var(--text-color);
-            padding: 3px 7px;
-            border-radius: 6px;
-        }
-
-        .project-links {
-            margin-top: 4px;
-        }
-
-        .btn-link {
-            font-size: 13px;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
             font-weight: 600;
-            color: var(--link-color);
-            background: none;
-            border: none;
-            padding: 0;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-family: inherit;
+            transition: all 0.2s;
         }
 
-        /* Калькулятор стоимости */
-        .calculator-section {
-            background-color: var(--secondary-bg);
+        .lang-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Навигационные вкладки */
+        .tabs {
+            display: flex;
+            background: var(--secondary-bg);
+            padding: 4px;
             border-radius: 14px;
-            padding: 16px;
-            border: 1px solid rgba(128, 128, 128, 0.12);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
+            gap: 4px;
         }
 
-        .calc-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .calc-label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--hint-color);
-        }
-
-        .calc-select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid rgba(128, 128, 128, 0.2);
-            background: var(--bg-color);
-            color: var(--text-color);
-            font-size: 14px;
-            outline: none;
-        }
-
-        .calc-options {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 4px;
-        }
-
-        .calc-checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        .calc-checkbox-item input {
-            width: 16px;
-            height: 16px;
-            accent-color: var(--button-color);
-        }
-
-        .calc-price-box {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 10px;
-            border-top: 1px dashed rgba(128, 128, 128, 0.25);
-            margin-top: 6px;
-        }
-
-        .calc-price-title {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .calc-price-val {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--button-color);
-        }
-
-        .calc-apply-btn {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid var(--button-color);
+        .tab-btn {
+            flex: 1;
             background: transparent;
-            color: var(--button-color);
+            border: none;
+            color: var(--hint-color);
+            padding: 10px 4px;
+            border-radius: 10px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
+            text-align: center;
         }
 
-        .calc-apply-btn:active {
+        .tab-btn.active {
             background: var(--button-color);
             color: var(--button-text);
+            box-shadow: 0 2px 8px var(--accent-glow);
         }
 
-        /* FAQ */
-        .faq-section {
-            background-color: var(--secondary-bg);
-            border-radius: 14px;
+        /* Контейнеры контента */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Карточки */
+        .card {
+            background: var(--secondary-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
             padding: 16px;
-            border: 1px solid rgba(128, 128, 128, 0.12);
+            margin-bottom: 14px;
+        }
+
+        .card h2 {
+            font-size: 15px;
+            margin-bottom: 10px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 16px;
+            align-items: center;
+            gap: 8px;
+            color: var(--button-color);
         }
 
-        .faq-item {
-            border-bottom: 1px solid rgba(128, 128, 128, 0.15);
-            padding-bottom: 10px;
+        .card p {
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: var(--text-color);
         }
 
-        .faq-item:last-child {
-            border-bottom: none;
+        /* Теги навыков */
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Проекты */
+        .project-item {
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .project-item:last-child {
+            margin-bottom: 0;
             padding-bottom: 0;
+            border-bottom: none;
         }
 
-        .faq-question {
+        .project-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        /* Калькулятор */
+        .calc-group {
+            margin-bottom: 14px;
+        }
+
+        .calc-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--hint-color);
+            margin-bottom: 6px;
+        }
+
+        .calc-select, .calc-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-color);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            outline: none;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-label input {
+            accent-color: var(--button-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        .calc-total {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid var(--button-color);
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .calc-total-title {
+            font-size: 12px;
+            color: var(--hint-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .calc-total-val {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--button-color);
+            margin-top: 4px;
+        }
+
+        /* Кнопки действий */
+        .btn-action {
+            width: 100%;
+            background: var(--button-color);
+            color: var(--button-text);
+            border: none;
+            padding: 13px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: transform 0.1s;
+        }
+
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
+        /* Модальное окно заявки */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--secondary-bg);
+            border: 1px solid var(--card-border);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            animation: popIn 0.2s ease-out;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-color);
-            user-select: none;
-            gap: 8px;
+            margin-bottom: 14px;
         }
 
-        .faq-icon {
+        .modal-header h3 {
             font-size: 16px;
-            transition: transform 0.2s ease;
-            color: var(--hint-color);
         }
 
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.25s ease-out;
-            font-size: 13px;
-            line-height: 1.45;
-            color: var(--hint-color);
-            margin-top: 0;
-        }
-
-        .faq-item.active .faq-icon {
-            transform: rotate(45deg);
-        }
-
-        .faq-item.active .faq-answer {
-            margin-top: 8px;
-        }
-
-        /* Форма обратной связи */
-        .feedback-section {
-            background-color: var(--secondary-bg);
-            border-radius: 14px;
-            padding: 16px;
-            border: 1px solid rgba(128, 128, 128, 0.12);
-        }
-
-        .feedback-form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .form-input, .form-textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(128, 128, 128, 0.2);
-            background: var(--bg-color);
-            color: var(--text-color);
-            font-size: 14px;
-            outline: none;
-            font-family: inherit;
-        }
-
-        .form-input:focus, .form-textarea:focus {
-            border-color: var(--button-color);
-        }
-
-        .form-textarea {
-            resize: none;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 14px;
-            border-radius: 10px;
+        .modal-close {
+            background: transparent;
             border: none;
-            background-color: var(--button-color);
-            color: var(--button-text);
-            font-size: 15px;
-            font-weight: 600;
+            color: var(--hint-color);
+            font-size: 20px;
             cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .submit-btn:active:not(:disabled) {
-            opacity: 0.85;
-        }
-
-        .admin-badge-banner {
-            display: none;
-            text-align: center;
-            padding: 10px;
-            border-radius: 10px;
-            background: rgba(36, 129, 204, 0.1);
-            color: var(--button-color);
-            font-size: 13px;
-            font-weight: 500;
         }
     </style>
 </head>
 <body>
 
-    <!-- Шапка профиля -->
-    <header class="profile">
-        <div class="avatar-container">
-            <img src="/avatar.jpg?v=9" alt="Алексей" class="avatar-img" id="user-avatar" onerror="this.style.display='none'; document.getElementById('avatar-fallback').style.display='block';">
-            <span id="avatar-fallback" class="avatar-placeholder">AI</span>
+    <!-- Шапка -->
+    <header class="header">
+        <div class="profile">
+            <img src="/avatar.jpg" alt="Avatar" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=Alexey+Khripunov&background=38bdf8&color=0f172a'">
+            <div class="name-role">
+                <h1 data-i18n="name">Алексей Хрипунов</h1>
+                <p data-i18n="role">QA Engineer & Python Developer</p>
+            </div>
         </div>
-        <h1 id="user-name">Алексей Хрипунов</h1>
-        <p>Разработка ботов, автоматизация, тестирование и внедрение искусственного интеллекта</p>
-
-        <!-- Кнопки контактов и шаринга -->
-        <div class="quick-contacts">
-            <button type="button" class="contact-chip chip-tg" onclick="openExternal('https://t.me/iov1981')">
-                ✈️ Telegram
-            </button>
-            <button type="button" class="contact-chip chip-share" onclick="shareMiniApp()">
-                🔗 Поделиться визиткой
-            </button>
-            <button type="button" class="contact-chip chip-insta" onclick="openExternal('https://www.instagram.com/iov1981')">
-                📸 Instagram
-            </button>
-            <button type="button" class="contact-chip chip-mail" onclick="openMail('hripunov60@gmail.com')">
-                ✉️ Email
-            </button>
-            <button type="button" class="contact-chip chip-github" onclick="openExternal('https://github.com/iov1981')">
-                🐙 GitHub
-            </button>
-        </div>
+        <button class="lang-btn" id="langToggle">EN</button>
     </header>
 
-    <main>
-        <div id="admin-banner" class="admin-badge-banner">
-            👑 Вы просматриваете визитку как владелец (форма связи скрыта)
+    <!-- Вкладки навигации -->
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="about" data-i18n="tab_about">Обо мне</button>
+        <button class="tab-btn" data-tab="skills" data-i18n="tab_skills">Навыки</button>
+        <button class="tab-btn" data-tab="projects" data-i18n="tab_projects">Проекты</button>
+        <button class="tab-btn" data-tab="calc" data-i18n="tab_calc">Оценка</button>
+    </nav>
+
+    <!-- Вкладка: Обо мне -->
+    <section class="tab-content active" id="tab-about">
+        <div class="card">
+            <h2 data-i18n="about_title">🚀 Специализация</h2>
+            <p data-i18n="about_text_1">
+                Инженер по обеспечению качества (QA) с фокусом на ручное и базовое автоматизированное тестирование API, баз данных и логики клиент-серверных приложений.
+            </p>
+            <p style="margin-top: 8px;" data-i18n="about_text_2">
+                Параллельно разрабатываю Telegram-ботов на <b>aiogram 3</b>, интерактивные <b>Telegram Mini Apps</b>, генераторы PDF и сервисы автоматизации.
+            </p>
         </div>
 
-        <!-- Секция Портфолио -->
-        <h2 class="section-title">📂 Мои проекты & Направления</h2>
+        <div class="card">
+            <h2 data-i18n="contacts_title">📬 Быстрая связь</h2>
+            <p>• Telegram: <a href="https://t.me/iov1981" style="color: var(--button-color); text-decoration: none;">@iov1981</a></p>
+            <p>• GitHub: <a href="https://github.com/iov1981" style="color: var(--button-color); text-decoration: none;">github.com/iov1981</a></p>
+            <p>• Email: <a href="mailto:hripunov60@gmail.com" style="color: var(--button-color); text-decoration: none;">hripunov60@gmail.com</a></p>
+        </div>
+    </section>
 
-        <div class="projects-grid">
-            <div class="project-card">
-                <div class="project-header">
-                    <h3>Развиваю пользование ИИ</h3>
-                    <span class="badge badge-ai">Фокус</span>
-                </div>
-                <p class="project-desc">
-                    Внедрение нейросетей и AI-агентов в рабочие процессы, оптимизация задач с помощью LLM, автоматизация рутины и консультации по интеграции ИИ в бизнес.
-                </p>
-                <div class="project-stack">
-                    <span class="tag">LLM Integrations</span>
-                    <span class="tag">Prompt Engineering</span>
-                    <span class="tag">AI Agents</span>
-                    <span class="tag">Automation</span>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-header">
-                    <h3>Telegram Mini App «Визитка»</h3>
-                    <span class="badge">В работе</span>
-                </div>
-                <p class="project-desc">
-                    Интерактивное веб-приложение внутри Telegram с генерацией PDF-резюме на лету, базой данных SQLite, аналитикой и веб-сервером 24/7.
-                </p>
-                <div class="project-stack">
-                    <span class="tag">Python</span>
-                    <span class="tag">aiogram 3</span>
-                    <span class="tag">ReportLab</span>
-                    <span class="tag">SQLite</span>
-                </div>
-                <div class="project-links">
-                    <button type="button" class="btn-link" onclick="openExternal('https://github.com/iov1981/tma-vizitka')">Репозиторий на GitHub →</button>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-header">
-                    <h3>Бот заказа такси</h3>
-                    <span class="badge">Релиз</span>
-                </div>
-                <p class="project-desc">
-                    Многофункциональный Telegram-бот для автоматизации заявок на поездки, работы с геолокацией, тарификацией и маршрутизацией.
-                </p>
-                <div class="project-stack">
-                    <span class="tag">Python</span>
-                    <span class="tag">aiogram</span>
-                    <span class="tag">Render 24/7</span>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-header">
-                    <h3>QA & Автоматизация тестов</h3>
-                    <span class="badge badge-qa">Качество</span>
-                </div>
-                <p class="project-desc">
-                    Комплексное тестирование Telegram-ботов, веб-приложений и API. Покрытие критических сценариев автотестами, проверка нагрузок и стабильности.
-                </p>
-                <div class="project-stack">
-                    <span class="tag">QA Engineering</span>
-                    <span class="tag">Pytest</span>
-                    <span class="tag">API Testing</span>
-                    <span class="tag">Manual & Auto</span>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-header">
-                    <h3>Интеграция CRM & Парсинг</h3>
-                    <span class="badge">Сервисы</span>
-                </div>
-                <p class="project-desc">
-                    Сбор и обработка данных из внешних источников, синхронизация ботов с Google Таблицами, CRM-системами и мгновенная отправка лидов.
-                </p>
-                <div class="project-stack">
-                    <span class="tag">Webhooks</span>
-                    <span class="tag">REST API</span>
-                    <span class="tag">Data Scraping</span>
-                    <span class="tag">Google Sheets</span>
-                </div>
-            </div>
-
-            <div class="project-card">
-                <div class="project-header">
-                    <h3>Генерация PDF & Отчетов</h3>
-                    <span class="badge">Утилиты</span>
-                </div>
-                <p class="project-desc">
-                    Автоматическое формирование счетов, коммерческих предложений, визиток и резюме в формате PDF с динамическими QR-кодами.
-                </p>
-                <div class="project-stack">
-                    <span class="tag">ReportLab</span>
-                    <span class="tag">QRCode</span>
-                    <span class="tag">Pillow</span>
-                </div>
+    <!-- Вкладка: Навыки -->
+    <section class="tab-content" id="tab-skills">
+        <div class="card">
+            <h2 data-i18n="qa_skills_title">🧪 Тестирование (QA)</h2>
+            <p data-i18n="qa_skills_desc">Тест-дизайн, составление чек-листов и баг-репортов, тестирование API, работа с логами и сетевым трафиком.</p>
+            <div class="tag-list">
+                <span class="tag">Postman</span>
+                <span class="tag">API Testing (REST)</span>
+                <span class="tag">Chrome DevTools</span>
+                <span class="tag">SQL (SQLite / PostgreSQL)</span>
+                <span class="tag">Pytest</span>
+                <span class="tag">JSON / JSON Schema</span>
+                <span class="tag">SDLC & STLC</span>
             </div>
         </div>
 
-        <!-- Интерактивный калькулятор -->
-        <section class="calculator-section">
-            <h2 class="section-title">🧮 Калькулятор стоимости разработки</h2>
+        <div class="card">
+            <h2 data-i18n="dev_skills_title">🐍 Разработка (Python)</h2>
+            <p data-i18n="dev_skills_desc">Создание асинхронных микросервисов, ботов, интеграция со сторонними API и облачными платформами.</p>
+            <div class="tag-list">
+                <span class="tag">Python 3.11+</span>
+                <span class="tag">aiogram 3 (FSM, Filters)</span>
+                <span class="tag">aiohttp & Webhooks</span>
+                <span class="tag">aiosqlite</span>
+                <span class="tag">ReportLab (PDF Gen)</span>
+                <span class="tag">Gemini / OpenAI API</span>
+                <span class="tag">Git & GitHub</span>
+            </div>
+        </div>
+    </section>
 
+    <!-- Вкладка: Проекты -->
+    <section class="tab-content" id="tab-projects">
+        <div class="card">
+            <div class="project-item">
+                <div class="project-title">📱 Telegram Mini App «Визитка»</div>
+                <p data-i18n="proj_1">Полноценный интерактивный веб-интерфейс внутри Telegram, калькулятор стоимости разработки, админ-панель и экспорт лидов в Google Sheets.</p>
+            </div>
+            <div class="project-item">
+                <div class="project-title">🚖 Такси «Регион» Bot</div>
+                <p data-i18n="proj_2">Асинхронный бот для приема заказов, расчета расстояния и маршрута, база данных SQLite, управление сменами водителей.</p>
+            </div>
+            <div class="project-item">
+                <div class="project-title">⚡ TubeSaver-Pro</div>
+                <p data-i18n="proj_3">Утилита на Python с графическим интерфейсом для высокоскоростной загрузки и конвертации мультимедийного контента.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Вкладка: Калькулятор оценки -->
+    <section class="tab-content" id="tab-calc">
+        <div class="card">
+            <h2 data-i18n="calc_header">📊 Калькулятор проекта</h2>
             <div class="calc-group">
-                <label class="calc-label">Тип проекта:</label>
-                <select id="calc-project-type" class="calc-select">
-                    <option value="5000" data-name="Чат-бот визитка / меню">Базовый Telegram-бот (от 5 000 ₽)</option>
-                    <option value="12000" data-name="Бот с базой данных и админкой">Бот с БД SQLite и панелью управления (от 12 000 ₽)</option>
-                    <option value="20000" data-name="Telegram Mini App (TMA)">Telegram Mini App под ключ (от 20 000 ₽)</option>
-                    <option value="15000" data-name="Интеграция ИИ / LLM-агент">Интеграция ИИ / ChatGPT / Агенты (от 15 000 ₽)</option>
-                    <option value="8000" data-name="QA-тестирование и аудит">Тестирование и аудит существующего бота (от 8 000 ₽)</option>
+                <label data-i18n="calc_type_label">Тип задачи:</label>
+                <select id="calcType" class="calc-select">
+                    <option value="15000" data-i18n="opt_type_qa">Тестирование сайта / API (QA)</option>
+                    <option value="20000" data-i18n="opt_type_bot">Telegram-бот (aiogram 3)</option>
+                    <option value="35000" data-i18n="opt_type_tma">Telegram Mini App под ключ</option>
                 </select>
             </div>
 
             <div class="calc-group">
-                <label class="calc-label">Дополнительные опции:</label>
-                <div class="calc-options">
-                    <label class="calc-checkbox-item">
-                        <input type="checkbox" value="3000" data-name="Подключение онлайн-оплаты">
-                        <span>Прием платежей в боте (+3 000 ₽)</span>
-                    </label>
-                    <label class="calc-checkbox-item">
-                        <input type="checkbox" value="4000" data-name="Генерация PDF/QR-документов">
-                        <span>Генерация PDF/Чеков/QR на лету (+4 000 ₽)</span>
-                    </label>
-                    <label class="calc-checkbox-item">
-                        <input type="checkbox" value="3000" data-name="Деплой 24/7 с автопингом">
-                        <span>Развертывание на сервере 24/7 (+3 000 ₽)</span>
-                    </label>
-                </div>
+                <label data-i18n="calc_options_label">Дополнительные опции:</label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="optSheets" value="5000">
+                    <span data-i18n="opt_sheets">Интеграция с Google Sheets</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="optAi" value="10000">
+                    <span data-i18n="opt_ai">AI-ассистент (Gemini API)</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="optPdf" value="5000">
+                    <span data-i18n="opt_pdf">Генерация PDF-отчетов / резюме</span>
+                </label>
             </div>
 
-            <div class="calc-price-box">
-                <span class="calc-price-title">Ориентировочно:</span>
-                <span id="calc-total-price" class="calc-price-val">5 000 ₽</span>
+            <div class="calc-total">
+                <div class="calc-total-title" data-i18n="calc_est_label">Ориентировочная стоимость:</div>
+                <div class="calc-total-val" id="totalPrice">15 000 ₽</div>
             </div>
 
-            <button type="button" id="calc-apply-btn" class="calc-apply-btn">
-                Заказать с этим расчетом ↵
-            </button>
-        </section>
+            <button class="btn-action" id="btnOpenModal" data-i18n="btn_send_offer">Отправить на согласование</button>
+        </div>
+    </section>
 
-        <!-- Секция FAQ -->
-        <section class="faq-section">
-            <h2 class="section-title">❓ Частые вопросы (FAQ)</h2>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <span>Сколько времени занимает разработка бота?</span>
-                    <span class="faq-icon">+</span>
-                </div>
-                <div class="faq-answer">
-                    Базовый чат-бот или визитка создаются за 2–4 дня. Полноценное Mini App приложение или сложная интеграция с нейросетями и базой данных занимает от 1 до 2 недель.
-                </div>
+    <!-- Модальное окно отправки заявки -->
+    <div class="modal" id="leadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="modal_title">Отправить расчет Алексею</h3>
+                <button class="modal-close" id="btnCloseModal">&times;</button>
             </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <span>Где будет работать бот и нужно ли оплачивать сервер?</span>
-                    <span class="faq-icon">+</span>
-                </div>
-                <div class="faq-answer">
-                    Бот разворачивается в надежном облаке (например, Render) с автопингом 24/7. На начальном этапе можно использовать бесплатные тарифы без регулярных затрат на инфраструктуру.
-                </div>
+            <div class="calc-group">
+                <label data-i18n="form_name_label">Ваше имя / Компания:</label>
+                <input type="text" id="leadName" class="calc-input" placeholder="Александр (HR / Тимлид)">
             </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <span>Как происходит интеграция искусственного интеллекта?</span>
-                    <span class="faq-icon">+</span>
-                </div>
-                <div class="faq-answer">
-                    Бот подключается к API современных языковых моделей (OpenAI, Claude, DeepSeek). Настраивается системный промпт под вашу сферу, подключение базы знаний и валидация ответов.
-                </div>
+            <div class="calc-group">
+                <label data-i18n="form_contact_label">Контакт для связи:</label>
+                <input type="text" id="leadContact" class="calc-input" placeholder="@username или Email">
             </div>
-
-            <div class="faq-item">
-                <div class="faq-question">
-                    <span>Предоставляется ли тестирование и поддержка?</span>
-                    <span class="faq-icon">+</span>
-                </div>
-                <div class="faq-answer">
-                    Да, каждый сценарий покрывается ручными и автоматизированными тестами (QA), а после сдачи проекта предоставляется техническая поддержка и консультации.
-                </div>
-            </div>
-        </section>
-
-        <!-- Секция обратной связи -->
-        <section id="feedback-section" class="feedback-section">
-            <h2 class="section-title">✉️ Оставить заявку / Связаться</h2>
-            <form id="lead-form" class="feedback-form">
-                <input type="text" id="lead-name" class="form-input" placeholder="Ваше имя" required>
-                <input type="text" id="lead-contact" class="form-input" placeholder="Telegram @username или телефон" required>
-                <textarea id="lead-message" class="form-textarea" rows="3" placeholder="Опишите задачу или проект" required></textarea>
-                <button type="submit" id="lead-submit-btn" class="submit-btn">Отправить заявку</button>
-            </form>
-        </section>
-    </main>
+            <button class="btn-action" id="btnSubmitLead" data-i18n="btn_submit_lead">Подтвердить отправку</button>
+        </div>
+    </div>
 
     <script>
-        const tg = window.Telegram?.WebApp;
-        const urlParams = new URLSearchParams(window.location.search);
-        const isAdminParam = urlParams.get('admin') === 'true';
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-        // Открытие внешних ссылок без блокировки внутри Telegram WebApp
-        function openExternal(url) {
-            if (tg && typeof tg.openLink === 'function') {
-                tg.openLink(url);
+        // 1. Тактильный отклик (Haptic Feedback)
+        function triggerHaptic(type = 'light') {
+            if (tg.HapticFeedback) {
+                if (type === 'light') tg.HapticFeedback.impactOccurred('light');
+                if (type === 'medium') tg.HapticFeedback.impactOccurred('medium');
+                if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
+                if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
+            }
+        }
+
+        // 2. Управление BackButton
+        function setupBackButton(isActive, onBackCallback) {
+            if (!tg.BackButton) return;
+            if (isActive) {
+                tg.BackButton.show();
+                tg.BackButton.onClick(onBackCallback);
             } else {
-                window.open(url, '_blank');
+                tg.BackButton.hide();
             }
         }
 
-        // Надежное открытие Email через веб-интерфейс Gmail с fallback на mailto
-        function openMail(email) {
-            const webMailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`;
-            if (tg && typeof tg.openLink === 'function') {
-                tg.openLink(webMailUrl);
-            } else {
-                window.location.href = `mailto:${email}`;
-            }
+        // 3. Переключатель вкладок
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-            if (tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        }
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                triggerHaptic('light');
+                const targetTab = btn.getAttribute('data-tab');
 
-        // Поделиться Mini App через список чатов Telegram со стабильным параметром ?start=open
-        function shareMiniApp() {
-            const shareUrl = "https://t.me/aleksey_qa_vizitka_bot?start=open";
-            const shareText = "Привет! Посмотри визитку и портфолио Алексея Хрипунова (QA Engineer & Python Developer):";
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
 
-            const telegramShareLink = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+                btn.classList.add('active');
+                document.getElementById(`tab-${targetTab}`).classList.add('active');
+            });
+        });
 
-            if (tg && typeof tg.openTelegramLink === 'function') {
-                tg.openTelegramLink(telegramShareLink);
-            } else {
-                window.open(telegramShareLink, '_blank');
-            }
-
-            if (tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-        }
-
-        if (tg) {
-            tg.ready();
-            tg.expand();
-
-            if (isAdminParam) {
-                const feedbackBlock = document.getElementById('feedback-section');
-                const adminBanner = document.getElementById('admin-banner');
-                if (feedbackBlock) feedbackBlock.style.display = 'none';
-                if (adminBanner) adminBanner.style.display = 'block';
-            }
-
-            if (tg.initDataUnsafe?.user?.first_name) {
-                document.getElementById('user-name').innerText =
-                    (tg.initDataUnsafe.user.first_name + ' ' + (tg.initDataUnsafe.user.last_name || '')).trim();
-            }
-        }
-
-        // Калькулятор
-        const projectSelect = document.getElementById('calc-project-type');
-        const checkboxes = document.querySelectorAll('.calc-options input[type="checkbox"]');
-        const priceLabel = document.getElementById('calc-total-price');
-        const applyBtn = document.getElementById('calc-apply-btn');
-        const messageArea = document.getElementById('lead-message');
+        // 4. Логика калькулятора
+        const calcType = document.getElementById('calcType');
+        const optSheets = document.getElementById('optSheets');
+        const optAi = document.getElementById('optAi');
+        const optPdf = document.getElementById('optPdf');
+        const totalPriceEl = document.getElementById('totalPrice');
 
         function updatePrice() {
-            let total = parseInt(projectSelect.value, 10);
-            checkboxes.forEach(cb => {
-                if (cb.checked) {
-                    total += parseInt(cb.value, 10);
-                }
-            });
-            priceLabel.innerText = total.toLocaleString('ru-RU') + ' ₽';
+            triggerHaptic('light');
+            let base = parseInt(calcType.value) || 0;
+            if (optSheets.checked) base += parseInt(optSheets.value);
+            if (optAi.checked) base += parseInt(optAi.value);
+            if (optPdf.checked) base += parseInt(optPdf.value);
+
+            totalPriceEl.textContent = base.toLocaleString('ru-RU') + ' ₽';
         }
 
-        projectSelect.addEventListener('change', updatePrice);
-        checkboxes.forEach(cb => cb.addEventListener('change', updatePrice));
+        [calcType, optSheets, optAi, optPdf].forEach(el => el.addEventListener('change', updatePrice));
 
-        applyBtn.addEventListener('click', () => {
-            const selectedProject = projectSelect.options[projectSelect.selectedIndex].getAttribute('data-name');
-            let selectedOptions = [];
-            checkboxes.forEach(cb => {
-                if (cb.checked) {
-                    selectedOptions.push(cb.getAttribute('data-name'));
-                }
-            });
+        // 5. Модальное окно
+        const leadModal = document.getElementById('leadModal');
+        const btnOpenModal = document.getElementById('btnOpenModal');
+        const btnCloseModal = document.getElementById('btnCloseModal');
+        const btnSubmitLead = document.getElementById('btnSubmitLead');
 
-            let text = `Проект: ${selectedProject}\n`;
-            if (selectedOptions.length > 0) {
-                text += `Дополнительно: ${selectedOptions.join(', ')}\n`;
-            }
-            text += `Предварительный бюджет: ${priceLabel.innerText}\nДетали: `;
+        function closeModal() {
+            triggerHaptic('light');
+            leadModal.classList.remove('active');
+            setupBackButton(false);
+        }
 
-            messageArea.value = text;
-            messageArea.scrollIntoView({ behavior: 'smooth' });
-            messageArea.focus();
-
-            if (tg?.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
+        btnOpenModal.addEventListener('click', () => {
+            triggerHaptic('medium');
+            leadModal.classList.add('active');
+            setupBackButton(true, closeModal);
         });
 
-        // Аккордеон FAQ
-        document.querySelectorAll('.faq-question').forEach(header => {
-            header.addEventListener('click', () => {
-                const item = header.parentElement;
-                const answer = item.querySelector('.faq-answer');
-                const isActive = item.classList.contains('active');
+        btnCloseModal.addEventListener('click', closeModal);
 
-                document.querySelectorAll('.faq-item').forEach(otherItem => {
-                    if (otherItem !== item) {
-                        otherItem.classList.remove('active');
-                        otherItem.querySelector('.faq-answer').style.maxHeight = null;
-                    }
+        // 6. Отправка лида на бэкенд
+        btnSubmitLead.addEventListener('click', async () => {
+            const name = document.getElementById('leadName').value.trim();
+            const contact = document.getElementById('leadContact').value.trim();
+
+            if (!contact) {
+                triggerHaptic('error');
+                alert(currentLang === 'ru' ? 'Пожалуйста, укажите контакт для связи!' : 'Please specify a contact!');
+                return;
+            }
+
+            triggerHaptic('medium');
+            btnSubmitLead.disabled = true;
+            btnSubmitLead.textContent = currentLang === 'ru' ? 'Отправка...' : 'Sending...';
+
+            const user = tg.initDataUnsafe?.user || {};
+            const typeText = calcType.options[calcType.selectedIndex].text;
+            const extra = [];
+            if (optSheets.checked) extra.push('Google Sheets');
+            if (optAi.checked) extra.push('AI Gemini');
+            if (optPdf.checked) extra.push('PDF Gen');
+
+            const payload = {
+                name: name || user.first_name || 'Из Mini App',
+                contact: contact,
+                message: `Калькулятор: ${typeText}\nОпции: ${extra.join(', ') || 'нет'}\nИтог: ${totalPriceEl.textContent}`,
+                user_id: user.id || null,
+                username: user.username || null
+            };
+
+            try {
+                const res = await fetch('/api/lead', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
                 });
 
-                if (isActive) {
-                    item.classList.remove('active');
-                    answer.style.maxHeight = null;
+                if (res.ok) {
+                    triggerHaptic('success');
+                    alert(currentLang === 'ru' ? 'Заявка успешно передана!' : 'Offer successfully sent!');
+                    closeModal();
                 } else {
-                    item.classList.add('active');
-                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                    throw new Error();
                 }
+            } catch (e) {
+                triggerHaptic('error');
+                alert(currentLang === 'ru' ? 'Ошибка отправки. Попробуйте написать в бота.' : 'Error sending. Please contact via bot.');
+            } finally {
+                btnSubmitLead.disabled = false;
+                btnSubmitLead.textContent = currentLang === 'ru' ? 'Подтвердить отправку' : 'Submit Offer';
+            }
+        });
 
-                if (tg?.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('light');
+        // 7. Двуязычный интерфейс (RU / EN)
+        let currentLang = 'ru';
+        const translations = {
+            ru: {
+                name: "Алексей Хрипунов",
+                role: "QA Engineer & Python Developer",
+                tab_about: "Обо мне",
+                tab_skills: "Навыки",
+                tab_projects: "Проекты",
+                tab_calc: "Оценка",
+                about_title: "🚀 Специализация",
+                about_text_1: "Инженер по обеспечению качества (QA) с фокусом на ручное и базовое автоматизированное тестирование API, баз данных и логики клиент-серверных приложений.",
+                about_text_2: "Параллельно разрабатываю Telegram-ботов на aiogram 3, интерактивные Telegram Mini Apps, генераторы PDF и сервисы автоматизации.",
+                contacts_title: "📬 Быстрая связь",
+                qa_skills_title: "🧪 Тестирование (QA)",
+                qa_skills_desc: "Тест-дизайн, составление чек-листов и баг-репортов, тестирование API, работа с логами и сетевым трафиком.",
+                dev_skills_title: "🐍 Разработка (Python)",
+                dev_skills_desc: "Создание асинхронных микросервисов, ботов, интеграция со сторонними API и облачными платформами.",
+                proj_1: "Полноценный интерактивный веб-интерфейс внутри Telegram, калькулятор стоимости разработки, админ-панель и экспорт лидов в Google Sheets.",
+                proj_2: "Асинхронный бот для приема заказов, расчета расстояния и маршрута, база данных SQLite, управление сменами водителей.",
+                proj_3: "Утилита на Python с графическим интерфейсом для высокоскоростной загрузки и конвертации мультимедийного контента.",
+                calc_header: "📊 Калькулятор проекта",
+                calc_type_label: "Тип задачи:",
+                opt_type_qa: "Тестирование сайта / API (QA)",
+                opt_type_bot: "Telegram-бот (aiogram 3)",
+                opt_type_tma: "Telegram Mini App под ключ",
+                calc_options_label: "Дополнительные опции:",
+                opt_sheets: "Интеграция с Google Sheets",
+                opt_ai: "AI-ассистент (Gemini API)",
+                opt_pdf: "Генерация PDF-отчетов / резюме",
+                calc_est_label: "Ориентировочная стоимость:",
+                btn_send_offer: "Отправить на согласование",
+                modal_title: "Отправить расчет Алексею",
+                form_name_label: "Ваше имя / Компания:",
+                form_contact_label: "Контакт для связи:",
+                btn_submit_lead: "Подтвердить отправку"
+            },
+            en: {
+                name: "Alexey Khripunov",
+                role: "QA Engineer & Python Developer",
+                tab_about: "About",
+                tab_skills: "Skills",
+                tab_projects: "Projects",
+                tab_calc: "Estimation",
+                about_title: "🚀 Specialization",
+                about_text_1: "Quality Assurance (QA) Engineer focused on manual and automated testing of APIs, databases, and client-server architecture.",
+                about_text_2: "Also developing Telegram bots with aiogram 3, interactive Telegram Mini Apps, automated PDF generators, and cloud integrations.",
+                contacts_title: "📬 Contacts",
+                qa_skills_title: "🧪 QA Engineering",
+                qa_skills_desc: "Test design, checklists & bug reports, API validation, network traffic inspection and log analysis.",
+                dev_skills_title: "🐍 Python Development",
+                dev_skills_desc: "Asynchronous microservices, bots, integration with external APIs and cloud platforms.",
+                proj_1: "Complete interactive Telegram Mini App with cost calculator, admin dashboard, and Google Sheets lead export.",
+                proj_2: "Asynchronous taxi dispatch bot with route calculation, SQLite database, and driver shift management.",
+                proj_3: "Python desktop app with GUI for high-speed media conversion and downloading.",
+                calc_header: "📊 Project Calculator",
+                calc_type_label: "Task type:",
+                opt_type_qa: "Web / API Testing (QA)",
+                opt_type_bot: "Telegram Bot (aiogram 3)",
+                opt_type_tma: "Turnkey Telegram Mini App",
+                calc_options_label: "Additional options:",
+                opt_sheets: "Google Sheets Integration",
+                opt_ai: "AI Assistant (Gemini API)",
+                opt_pdf: "PDF CV / Report Generation",
+                calc_est_label: "Estimated cost:",
+                btn_send_offer: "Send for Review",
+                modal_title: "Submit Calculation to Alexey",
+                form_name_label: "Your Name / Company:",
+                form_contact_label: "Contact details:",
+                btn_submit_lead: "Submit Offer"
+            }
+        };
+
+        const langToggle = document.getElementById('langToggle');
+        langToggle.addEventListener('click', () => {
+            triggerHaptic('medium');
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            langToggle.textContent = currentLang === 'ru' ? 'EN' : 'RU';
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang][key]) {
+                    el.textContent = translations[currentLang][key];
                 }
             });
         });
-
-        // Отправка формы заявки (fetch + fallback)
-        const leadForm = document.getElementById('lead-form');
-        const submitBtn = document.getElementById('lead-submit-btn');
-
-        if (leadForm) {
-            leadForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                submitBtn.disabled = true;
-                submitBtn.innerText = 'Отправка...';
-
-                const tgUser = tg?.initDataUnsafe?.user || {};
-
-                const payload = {
-                    type: "lead",
-                    name: document.getElementById('lead-name').value.trim(),
-                    contact: document.getElementById('lead-contact').value.trim(),
-                    message: document.getElementById('lead-message').value.trim(),
-                    user_id: tgUser.id || "",
-                    username: tgUser.username || "",
-                    first_name: tgUser.first_name || ""
-                };
-
-                try {
-                    const response = await fetch('/api/lead', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (response.ok) {
-                        submitBtn.innerText = '✅ Отправлено!';
-                        if (tg?.HapticFeedback) {
-                            tg.HapticFeedback.notificationOccurred('success');
-                        }
-
-                        setTimeout(() => {
-                            if (tg && typeof tg.close === 'function') {
-                                tg.close();
-                            } else {
-                                alert('Спасибо! Заявка успешно отправлена.');
-                                leadForm.reset();
-                                submitBtn.disabled = false;
-                                submitBtn.innerText = 'Отправить заявку';
-                            }
-                        }, 700);
-                        return;
-                    }
-                } catch (err) {
-                    console.warn('Прямой POST не удался, пробуем sendData:', err);
-                }
-
-                try {
-                    if (tg && typeof tg.sendData === 'function') {
-                        tg.sendData(JSON.stringify(payload));
-                        submitBtn.innerText = '✅ Отправлено!';
-                        setTimeout(() => {
-                            if (tg.close) tg.close();
-                        }, 500);
-                    } else {
-                        alert('Заявка отправлена!');
-                        leadForm.reset();
-                        submitBtn.disabled = false;
-                        submitBtn.innerText = 'Отправить заявку';
-                    }
-                } catch (fallbackErr) {
-                    alert('Не удалось отправить заявку. Пожалуйста, напишите напрямую в чат бота.');
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = 'Отправить заявку';
-                }
-            });
-        }
     </script>
 </body>
 </html>
